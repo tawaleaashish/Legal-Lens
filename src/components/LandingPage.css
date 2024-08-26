@@ -1,0 +1,133 @@
+/* General styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #1e3c48;
+    color: white;
+  }
+  
+  /* Container for the entire page */
+  .legal-lens-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  /* Header styles */
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #294955;
+  }
+  
+  .history-button {
+    background-color: #4a6b75;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .auth-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .sign-up-button,
+  .login-button {
+    background-color: #4a6b75;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  /* Main content styles */
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    text-align: center;
+  }
+  
+  .legal-lens-icon {
+    width: 150px;
+    margin-bottom: 20px;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin: 10px 0;
+  }
+  
+  .tagline {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .instruction {
+    margin-bottom: 20px;
+  }
+  
+  .upload-button {
+    background-color: #68a0b0;
+    border: none;
+    padding: 15px 30px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-bottom: 30px;
+    border-radius: 25px;
+  }
+  
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .action-button {
+    background-color: #527a8a;
+    border: none;
+    padding: 15px 20px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 25px;
+  }
+  
+  /* Query section styles */
+  .query-section {
+    display: flex;
+    align-items: center;
+    background-color: #294955;
+    padding: 10px;
+    border-radius: 25px;
+    width: 80%;
+  }
+  
+  .query-input {
+    flex-grow: 1;
+    background-color: transparent;
+    border: none;
+    color: white;
+    padding: 10px;
+    font-size: 1rem;
+    outline: none;
+  }
+  
+  .query-submit-button {
+    background-color: #68a0b0;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 1.5rem;
+    border-radius: 50%;
+  }
+  
