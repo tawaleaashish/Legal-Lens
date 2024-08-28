@@ -82,17 +82,41 @@
   
   .legal-lens-icon {
     width: 150px;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
+    margin-top: 0px;
+    opacity: 0;
+    will-change: filter;
+  transition: filter 300ms;
+  /* box-shadow: 0 0 10px rgba(0, 255, 234, 0.7); */
+  }
+  .legal-lens-icon:hover {
+    /* box-shadow: 0 0 10px rgba(0, 255, 234, 0.7); */
+    filter: drop-shadow(0 0 2em #64ffffaa);
   }
   
-  h1 {
-    font-size: 2.5rem;
-    margin: 10px 0;
+  .heading{
+    font-size: 3rem;
+  color: #ffffff; /* White text color for contrast */
+  text-align: center;
+  text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
+  margin: 0px 0;
+  transition: text-shadow 0.3s ease; 
   }
+  .heading:hover{
+    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
+  }
+  
   
   .tagline {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #ffffff; /* White text color for contrast */
+    text-align: center;
+    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
+    margin: 1px 0;
+    transition: text-shadow 0.3s ease; 
+  }
+  .tagline:hover{
+    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
   }
   
   .instruction {
@@ -156,4 +180,5 @@
     font-size: 1.5rem;
     border-radius: 50%;
   }
+  
   
