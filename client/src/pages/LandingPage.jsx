@@ -1,6 +1,7 @@
 import React from 'react';
 import './LandingPage.css'; // Import the CSS file for styling
 import backgroundImage from '../assets/background-image.jpg';
+import legal_lens_logo from '../assets/logo.png'
 const LegalLensPage = () => {
   return (
     <div className="legal-lens-page">
@@ -17,7 +18,7 @@ const LegalLensPage = () => {
 
       <main className="main-content">
         <div className="icon-section">
-          <img src="src\assets\logo.png" alt="Legal Lens Icon" className="legal-lens-icon" />
+          <img src={legal_lens_logo} alt="Legal Lens Icon" className="legal-lens-icon" />
         </div>
         <h1>Legal Lens</h1>
         <p className="tagline">Decoding Legal Jargon</p>
