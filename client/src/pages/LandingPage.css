@@ -38,7 +38,7 @@
   }
   button {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 20px 20px;
     font-size: 16px;
     font-weight: bold;
     text-align: center;
@@ -82,21 +82,46 @@
   
   .legal-lens-icon {
     width: 150px;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
+    margin-top: 0px;
+    opacity: 0;
+    will-change: filter;
+  transition: filter 300ms;
+  /* box-shadow: 0 0 10px rgba(0, 255, 234, 0.7); */
+  }
+  .legal-lens-icon:hover {
+    /* box-shadow: 0 0 10px rgba(0, 255, 234, 0.7); */
+    filter: drop-shadow(0 0 2em #64ffffaa);
   }
   
-  h1 {
-    font-size: 2.5rem;
-    margin: 10px 0;
+  .heading{
+    font-size: 3rem;
+  color: #ffffff; /* White text color for contrast */
+  text-align: center;
+  text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
+  margin: 0px 0;
+  transition: text-shadow 0.3s ease; 
   }
+  .heading:hover{
+    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
+  }
+  
   
   .tagline {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #ffffff; /* White text color for contrast */
+    text-align: center;
+    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
+    margin: 1px 0;
+    transition: text-shadow 0.3s ease; 
+  }
+  .tagline:hover{
+    text-shadow: 0 0 5px #00f7ff, 0 0 10px #00ccbb, 0 0 15px #009499;
   }
   
   .instruction {
     margin-bottom: 20px;
+    color:#b9f5f7;
   }
   
   .upload-button {
@@ -115,10 +140,11 @@
     justify-content: center;
     gap: 20px;
     margin-bottom: 30px;
+    margin-top: 20px;
   }
   
   .action-button {
-    background-color: #527a8a;
+    background-color: #1FC1A2;
     border: none;
     padding: 15px 20px;
     color: white;
@@ -126,12 +152,15 @@
     cursor: pointer;
     border-radius: 25px;
   }
+  .action-button:hover{
+    background-color: #07A688;
+  }
   
   /* Query section styles */
   .query-section {
     display: flex;
     align-items: center;
-    background-color: #294955;
+    background-color: #f7f7f7;
     padding: 10px;
     border-radius: 25px;
     width: 80%;
@@ -141,7 +170,7 @@
     flex-grow: 1;
     background-color: transparent;
     border: none;
-    color: white;
+    color: rgb(0, 0, 0);
     padding: 10px;
     font-size: 1rem;
     outline: none;
@@ -156,4 +185,5 @@
     font-size: 1.5rem;
     border-radius: 50%;
   }
+  
   

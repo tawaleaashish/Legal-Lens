@@ -1,0 +1,19 @@
+.attach-icon {
+    font-size: 24px; /* Adjust size as needed */
+    color: #007bff; /* Color of the icon */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #007bff; /* Optional border */
+    border-radius: 50%; /* Make it circular */
+    width: 50px; /* Width of the icon container */
+    height: 50px; /* Height of the icon container */
+    background-color: #fff; /* Background color of the icon container */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Optional shadow */
+  }
+  
+  .attach-icon:hover {
+    color: #0056b3; /* Darker color on hover */
+    border-color: #0056b3; /* Darker border color on hover */
+  }
