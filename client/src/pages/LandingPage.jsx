@@ -1,11 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import './LandingPage.css';
 import backgroundImage from '../assets/background-image.jpg';
+<<<<<<< HEAD
 import gsap from 'gsap'; // Import GSAP
 import logo from '../assets/logo.png';
 import FileUpload from '../components/FileUpload'; // Ensure this path is correct
 import Uploadbutton from '../components/Uploadbutton';
 import Sendbutton from '../components/Sendbutton';
+=======
+import legal_lens_logo from '../assets/logo.png'
+>>>>>>> 32b7616fc90c8cacd1a2997aceee1e7047ad687c
 const LegalLensPage = () => {
   const logoItem = useRef(null);
   const logoText = useRef(null);
@@ -44,12 +48,16 @@ const LegalLensPage = () => {
     <div className="legal-lens-page">
       <main className="main-content">
         <div className="icon-section">
+<<<<<<< HEAD
           <img
             ref={logoItem}
             src={logo}
             alt="Legal Lens Icon"
             className="legal-lens-icon"
           />
+=======
+          <img src={legal_lens_logo} alt="Legal Lens Icon" className="legal-lens-icon" />
+>>>>>>> 32b7616fc90c8cacd1a2997aceee1e7047ad687c
         </div>
         <h1 ref={logoText} className="heading">Legal Lens</h1>
         <p ref={logoTag} className="tagline">Decoding Legal Jargon</p>
