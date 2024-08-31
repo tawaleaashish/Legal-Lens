@@ -38,7 +38,7 @@
   }
   button {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 20px 20px;
     font-size: 16px;
     font-weight: bold;
     text-align: center;
@@ -121,6 +121,7 @@
   
   .instruction {
     margin-bottom: 20px;
+    color:#b9f5f7;
   }
   
   .upload-button {
@@ -139,10 +140,11 @@
     justify-content: center;
     gap: 20px;
     margin-bottom: 30px;
+    margin-top: 20px;
   }
   
   .action-button {
-    background-color: #527a8a;
+    background-color: #1FC1A2;
     border: none;
     padding: 15px 20px;
     color: white;
@@ -150,12 +152,15 @@
     cursor: pointer;
     border-radius: 25px;
   }
+  .action-button:hover{
+    background-color: #07A688;
+  }
   
   /* Query section styles */
   .query-section {
     display: flex;
     align-items: center;
-    background-color: #294955;
+    background-color: #f7f7f7;
     padding: 10px;
     border-radius: 25px;
     width: 80%;
@@ -165,7 +170,7 @@
     flex-grow: 1;
     background-color: transparent;
     border: none;
-    color: white;
+    color: rgb(0, 0, 0);
     padding: 10px;
     font-size: 1rem;
     outline: none;

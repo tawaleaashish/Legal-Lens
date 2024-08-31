@@ -4,7 +4,8 @@ import backgroundImage from '../assets/background-image.jpg';
 import gsap from 'gsap'; // Import GSAP
 import logo from '../assets/logo.png';
 import FileUpload from '../components/FileUpload'; // Ensure this path is correct
-
+import Uploadbutton from '../components/Uploadbutton';
+import Sendbutton from '../components/Sendbutton';
 const LegalLensPage = () => {
   const logoItem = useRef(null);
   const logoText = useRef(null);
@@ -52,11 +53,12 @@ const LegalLensPage = () => {
         </div>
         <h1 ref={logoText} className="heading">Legal Lens</h1>
         <p ref={logoTag} className="tagline">Decoding Legal Jargon</p>
-        <p className="instruction">Upload your document to summarize and analyze</p>
+        <p className="instruction">Upload your documents to summarize and analyze</p>
 
        
 
-        <button className="upload-button">Upload Document</button>
+        {/* <button className="upload-button">Upload Document</button> */}
+        <Uploadbutton/>
 
         <div className="action-buttons">
           <button className="action-button">Summarize my contract</button>
@@ -70,8 +72,9 @@ const LegalLensPage = () => {
             placeholder="Ask me your queries..."
             className="query-input"
           />
-           <FileUpload /> {/* Render FileUpload component */}
-          <button className="query-submit-button">↩︎</button>
+           
+          {/* <button className="query-submit-button">↩︎</button> */}
+          <Sendbutton/>
         </div>
       </main>
     </div>
