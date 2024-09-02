@@ -1,16 +1,17 @@
-import React, { useRef, useEffect } from 'react';
-import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+import React, { useRef, useEffect ,useState } from 'react';
 import { useNavigate   } from 'react-router-dom';
 import './MainPage.css';
 import gsap from 'gsap';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import logo from "../assets/logo.png";
+import supabase from "../supabaseClient.js";
 
 const MainPageContent = () => {
   const logoItem = useRef(null);
   const logoText = useRef(null);
   const logoTag = useRef(null);
-  const nav= useNavigate();
+  const navigate= useNavigate();
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
     gsap.to(logoItem.current, {
@@ -41,27 +42,38 @@ const MainPageContent = () => {
     });
   }, []);
 
-  const handleLoginSuccess = (tokenResponse) => {
-    console.log('Login Success:', tokenResponse);
-    nav('/home')
-  //   return (
-  //     <Router>
-  //       <Routes>
-  //         <Route path="/home" element={<LegalLensPage />} />
-  //       </Routes>
-  //     </Router>
-  // );
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+    };
+
+    fetchSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setSession(session);
+        navigate('/home'); // Navigate to home page on sign-in
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null); // Clear session state on sign-out
+      }
+    });
+
+    return () => subscription?.unsubscribe();
+  }, [navigate]);
+
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+
+    if (error) {
+      console.error('Login Failed:', error.message);
+      // Handle login error
+    }
+    // No need to handle navigation here; handled in auth state listener
   };
 
-  const handleLoginError = (error) => {
-    console.error('Login Failed:', error);
-    // Implement error handling, e.g., show an error message to the user
-  };
-
-  const login = useGoogleLogin({
-    onSuccess: handleLoginSuccess,
-    onError: handleLoginError,
-  });
 
   return (
     <div className="main-page">
@@ -71,17 +83,11 @@ const MainPageContent = () => {
         <p ref={logoTag} className="tagline">Decoding Legal Jargon</p>
       </div>
       <div className="buttons">
-        <button className="button signup-button" onClick={() => login()}>Sign Up</button>
-        <button className="button login-button" onClick={() => login()}>Login</button>
+        <button className="button signup-button" onClick={handleLogin}>Sign Up</button>
+        <button className="button login-button" onClick={handleLogin}>Login</button>
       </div>
     </div>
   );
 };
 
-const MainPage = () => (
-  <GoogleOAuthProvider clientId="324834956157-qf295eru01eiiv82fapvuv52taie6mls.apps.googleusercontent.com">
-    <MainPageContent />
-  </GoogleOAuthProvider>
-);
-
-export default MainPage;
+export default MainPageContent;
