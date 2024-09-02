@@ -1,4 +1,4 @@
-import React, { useRef, useEffect ,useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate   } from 'react-router-dom';
 import './MainPage.css';
 import gsap from 'gsap';
@@ -11,6 +11,18 @@ const MainPageContent = () => {
   const logoText = useRef(null);
   const logoTag = useRef(null);
   const navigate= useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if there's an active session
+    const session = supabase.auth.session();
+    if (session) {
+      // User is already authenticated, navigate to /home
+      navigate('/home');
+    } else {
+      setLoading(false); // Show the login page if no session is found
+    }
+  }, [navigate]);
 
   useEffect(() => {
     gsap.to(logoItem.current, {
@@ -42,16 +54,22 @@ const MainPageContent = () => {
   }, []);
 
   const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/home`, // Redirect to the correct route after login
+        },
+      });
 
-    if (error) {
-      console.error('Login Failed:', error.message);
-    }
-    else{
-      console.error('Login Success:');
-      navigate('/home')
+      if (error) {
+        console.error('Login Failed:', error.message);
+      } else {
+        console.log('Redirecting to /home...');
+        navigate('/home'); // Navigate after successful login
+      }
+    } catch (error) {
+      console.error('Unexpected Error:', error);
     }
   };
 
