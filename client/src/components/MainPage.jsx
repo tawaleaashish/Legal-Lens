@@ -42,28 +42,6 @@ const MainPageContent = () => {
     });
   }, []);
 
-  
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-    };
-
-    fetchSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setSession(session);
-        // Navigate to home or any other page
-        navigate('/home'); // Make sure '/home' is the correct route
-      } else if (event === 'SIGNED_OUT') {
-        setSession(null); // Clear session state on sign-out
-      }
-    });
-
-    return () => subscription?.unsubscribe();
-  }, [navigate]);
-
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -75,6 +53,11 @@ const MainPageContent = () => {
     if (error) {
       console.error('Login Failed:', error.message);
       // Handle login error
+    }
+    else{
+      console.error('Login Success:');
+      navigate('/home')
+
     }
     // No need to handle navigation here; handled in auth state listener
   };
