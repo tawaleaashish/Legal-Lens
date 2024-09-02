@@ -11,18 +11,6 @@ const MainPageContent = () => {
   const logoText = useRef(null);
   const logoTag = useRef(null);
   const navigate= useNavigate();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if there's an active session
-    const session = supabase.auth.session();
-    if (session) {
-      // User is already authenticated, navigate to /home
-      navigate('/home');
-    } else {
-      setLoading(false); // Show the login page if no session is found
-    }
-  }, [navigate]);
 
   useEffect(() => {
     gsap.to(logoItem.current, {
@@ -57,9 +45,6 @@ const MainPageContent = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/home`, // Redirect to the correct route after login
-        },
       });
 
       if (error) {
