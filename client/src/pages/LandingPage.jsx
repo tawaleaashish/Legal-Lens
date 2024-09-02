@@ -53,12 +53,11 @@ const LegalLensPage = () => {
         </div>
         <h1 ref={logoText} className="heading">Legal Lens</h1>
         <p ref={logoTag} className="tagline">Decoding Legal Jargon</p>
-        <p className="instruction">Upload your documents to summarize and analyze</p>
+        {/* <p className="instruction">Upload your documents to summarize and analyze</p> */}
 
        
 
         {/* <button className="upload-button">Upload Document</button> */}
-        <Uploadbutton/>
 
         <div className="action-buttons">
           <button className="action-button">Summarize my contract</button>
@@ -67,6 +66,7 @@ const LegalLensPage = () => {
         </div>
 
         <div className="query-section">
+        <Uploadbutton/>
           <input
             type="text"
             placeholder="Ask me your queries..."
@@ -82,3 +82,6 @@ const LegalLensPage = () => {
 };
 
 export default LegalLensPage;
+
+
+

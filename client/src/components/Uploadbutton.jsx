@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -16,12 +16,16 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  marginTop: '-10px', // Move button up
-  backgroundColor: '#1FC1A2', // Change color
-  color: '#fff',
-  boxShadow: '0px 4px 15px rgba(25, 118, 210, 0.4)', // Glow effect
+  minWidth: '40px', // Fixed width and height to make it circular
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  padding: 0, // Remove default padding
+  display: 'flex', // Center the icon
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'black',
   '&:hover': {
-    backgroundColor: '#07A688', // Darken color on hover
     boxShadow: '0px 4px 15px rgba(25, 118, 210, 0.6)', // Intensify glow on hover
   },
 }));
@@ -29,10 +33,9 @@ const StyledButton = styled(Button)(({ theme }) => ({
 export default function Uploadbutton() {
   return (
     <StyledButton
-      component="label"
-      startIcon={<CloudUploadIcon />}
-    >
-      Upload files
+      component="label">
+      <AttachFileIcon />
+    
       <VisuallyHiddenInput
         type="file"
         onChange={(event) => console.log(event.target.files)}

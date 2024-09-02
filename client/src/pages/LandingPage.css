@@ -1,5 +1,4 @@
 /* General styles */
-
   /* Container for the entire page */
   .legal-lens-page {
     font-family: 'Roboto', sans-serif;
@@ -163,7 +162,7 @@
     background-color: #f7f7f7;
     padding: 10px;
     border-radius: 25px;
-    width: 80%;
+    width: 120%;
   }
   
   .query-input {
