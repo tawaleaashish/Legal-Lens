@@ -42,6 +42,7 @@ const MainPageContent = () => {
     });
   }, []);
 
+  
   useEffect(() => {
     const fetchSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -53,7 +54,8 @@ const MainPageContent = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         setSession(session);
-        navigate('/home'); // Navigate to home page on sign-in
+        // Navigate to home or any other page
+        navigate('/home'); // Make sure '/home' is the correct route
       } else if (event === 'SIGNED_OUT') {
         setSession(null); // Clear session state on sign-out
       }
@@ -65,6 +67,9 @@ const MainPageContent = () => {
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/home` // Ensure redirect to a valid route
+      }
     });
 
     if (error) {
