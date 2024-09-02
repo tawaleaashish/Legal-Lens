@@ -11,7 +11,6 @@ const MainPageContent = () => {
   const logoText = useRef(null);
   const logoTag = useRef(null);
   const navigate= useNavigate();
-  const [session, setSession] = useState(null);
 
   useEffect(() => {
     gsap.to(logoItem.current, {
@@ -45,21 +44,15 @@ const MainPageContent = () => {
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/home` // Ensure redirect to a valid route
-      }
     });
 
     if (error) {
       console.error('Login Failed:', error.message);
-      // Handle login error
     }
     else{
       console.error('Login Success:');
       navigate('/home')
-
     }
-    // No need to handle navigation here; handled in auth state listener
   };
 
 
