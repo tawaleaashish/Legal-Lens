@@ -10,8 +10,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainPageContent />} />
-        <Route path="/home" element={<LegalLensPage />} />
+        {/* <Route path="/" element={<MainPageContent />} /> */}
+        <Route path="/" element={<LegalLensPage />} />
         
       </Routes>
     </Router>
