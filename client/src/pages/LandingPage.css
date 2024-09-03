@@ -39,7 +39,7 @@ body {
 }
 
 .legal-lens-icon {
-  width: 150px;
+  width: 175px;
   margin: 0px;
   opacity: 0;
   will-change: filter;
@@ -242,8 +242,8 @@ body {
 
 .chat-toggle-button {
   position: fixed;
-  top: 15px;
-  left: 75px;
+  top: 13px;
+  left: 10px;
   z-index: 1000;
   padding: 10px 20px;
   background-color: #1FC1A2;
@@ -259,3 +259,18 @@ body {
   opacity: 5;
 }
 
+.new-chat-button {
+  position: fixed;
+  margin-left: 5px;
+  top: 75px;
+  left: 10px;
+  /* other styling properties */
+}
+
+.close-sidebar {
+  /* styling properties */
+  position: fixed;
+  margin-left: 15px;
+  top: 75px;
+  left: 115px;
+}

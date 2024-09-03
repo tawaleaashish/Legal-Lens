@@ -763,6 +763,8 @@ const LegalLensPage = () => {
       setHistory(prevHistory => [{ query, response: errorMessage }, ...prevHistory]);
     } finally {
       setIsLoading(false);
+      // Clear the query input field after sending the query
+      setQuery('');
     }
   };
 
@@ -772,6 +774,19 @@ const LegalLensPage = () => {
 
   const toggleChatSidebar = () => {
     setIsChatSidebarOpen(!isChatSidebarOpen);
+    // Restore the previous chat state when the sidebar is closed
+    if (isChatSidebarOpen && history.length > 0) {
+      const previousChat = history[0];
+      setQuery(previousChat.query);
+      setResponse(previousChat.response);
+      setHasQueried(true);
+    }
+  };
+
+  const handleNewChat = () => {
+    setQuery('');
+    setResponse('');
+    setHasQueried(false);
   };
 
   useEffect(() => {
@@ -819,7 +834,7 @@ const LegalLensPage = () => {
               <button className="close-sidebar" onClick={toggleChatSidebar}>×</button>
             </div>
             <div className="chat-sidebar-content">
-              <button className="new-chat-button">New Chat</button>
+              <button className="new-chat-button" onClick={handleNewChat}>New Chat</button>
             </div>
           </div>
         )}
@@ -835,7 +850,7 @@ const LegalLensPage = () => {
         {isSidebarOpen && (
           <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
-              <h3> </h3>
+              <h3></h3>
             </div>
             <div className="history-list">
               {history.map((item, index) => (
