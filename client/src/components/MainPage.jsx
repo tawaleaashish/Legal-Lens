@@ -41,6 +41,19 @@ const MainPageContent = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session.user);
+        navigate('/home');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
+
   const handleLogin = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -51,7 +64,7 @@ const MainPageContent = () => {
         console.error('Login Failed:', error.message);
       } else {
         console.log('Redirecting to /home...');
-        navigate('/home'); // Navigate after successful login
+        // navigate('/home'); // Navigate after successful login
       }
     } catch (error) {
       console.error('Unexpected Error:', error);
@@ -69,6 +82,7 @@ const MainPageContent = () => {
       <div className="buttons">
         <button className="button signup-button" onClick={handleLogin}>Sign Up</button>
         <button className="button login-button" onClick={handleLogin}>Login</button>
+        {/* {(async () => {console.log(await supabase.auth.getUser())})()} */}
       </div>
     </div>
   );
