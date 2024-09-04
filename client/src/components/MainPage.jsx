@@ -64,7 +64,7 @@ const MainPageContent = () => {
         console.error('Login Failed:', error.message);
       } else {
         console.log('Redirecting to /home...');
-        // navigate('/home'); // Navigate after successful login
+        navigate('/home'); // Navigate after successful login
       }
     } catch (error) {
       console.error('Unexpected Error:', error);
