@@ -126,6 +126,19 @@ const LegalLensPage = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session.user);
+        navigate('/home');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
+
   return (
     <div className="legal-lens-page">
       <main className="main-content">
