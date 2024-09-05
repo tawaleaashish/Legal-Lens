@@ -133,7 +133,7 @@ const LegalLensPage = () => {
         navigate('/home');
       }
       else{
-        navigate('/')
+        navigate('/');
       }
     });
 
