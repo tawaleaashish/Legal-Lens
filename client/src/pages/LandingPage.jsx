@@ -224,7 +224,11 @@ const LegalLensPage = () => {
           <button onClick={async () => {
             const {error} = await supabase.auth.signOut();
             if (!error) {
-              navigate('/')
+              navigate('/');
+            }
+            else {
+              console.error(error);
+              navigate('/');
             }
           }} className="send-button remove-when-done">Logout</button>
         </div>
