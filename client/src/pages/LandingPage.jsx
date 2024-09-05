@@ -132,9 +132,6 @@ const LegalLensPage = () => {
         console.log('User signed in:', session.user);
         navigate('/home');
       }
-      else{
-        navigate('/');
-      }
     });
 
     return () => {
