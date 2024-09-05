@@ -3,6 +3,9 @@ import './LandingPage.css';
 import gsap from 'gsap';
 import logo from '../assets/logo.png';
 import Uploadbutton from '../components/Uploadbutton';
+import supabase from '../supabaseClient';
+import { useNavigate } from 'react-router-dom';
+
 
 const API_KEY = window.env?.REACT_APP_GEMINI_API_KEY || 'AIzaSyBbTYvtNqksIeWj7NItfl8wWaTyk9D6-DQ';
 
@@ -15,6 +18,8 @@ const LegalLensPage = () => {
   const [history, setHistory] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
 
   const logoItem = useRef(null);
   const logoText = useRef(null);
@@ -216,6 +221,12 @@ const LegalLensPage = () => {
             onChange={handleQueryChange}
           />
           <button onClick={handleSendQuery} className="send-button">Send</button>
+          <button onClick={async () => {
+            const {error} = await supabase.auth.signOut();
+            if (!error) {
+              navigate('/')
+            }
+          }} className="send-button remove-when-done">Logout</button>
         </div>
       </main>
     </div>
