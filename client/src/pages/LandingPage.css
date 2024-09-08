@@ -319,3 +319,18 @@ body {
 .logout-button:hover{
   background-color: #07A688;
 }
+p, li {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5; /* Adjust line height as needed */
+}
+
+ul, ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: -0.7em; /* Adjust space between list items */
+}
+

@@ -5,21 +5,20 @@ import logo from '../assets/logo.png';
 import Uploadbutton from '../components/Uploadbutton';
 import supabase from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
-
+import ReactMarkdown from 'react-markdown'; // Import react-markdown
 
 const API_KEY = window.env?.REACT_APP_GEMINI_API_KEY || 'AIzaSyBbTYvtNqksIeWj7NItfl8wWaTyk9D6-DQ';
 
 const LegalLensPage = () => {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
-  const [displayedQuery, setDisplayedQuery] = useState(''); // New state to hold the displayed query
+  const [displayedQuery, setDisplayedQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasQueried, setHasQueried] = useState(false);
   const [history, setHistory] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const navigate = useNavigate();
-
 
   const logoItem = useRef(null);
   const logoText = useRef(null);
@@ -34,7 +33,7 @@ const LegalLensPage = () => {
 
     setIsLoading(true);
     setResponse('');
-    setDisplayedQuery(query); // Set the displayed query before sending
+    setDisplayedQuery(query);
     setHasQueried(true);
 
     try {
@@ -69,7 +68,6 @@ const LegalLensPage = () => {
       setHistory(prevHistory => [{ query, response: errorMessage }, ...prevHistory]);
     } finally {
       setIsLoading(false);
-      // Clear the query input field after sending the query
       setQuery('');
     }
   };
@@ -80,7 +78,6 @@ const LegalLensPage = () => {
 
   const toggleChatSidebar = () => {
     setIsChatSidebarOpen(!isChatSidebarOpen);
-    // Restore the previous chat state when the sidebar is closed
     if (isChatSidebarOpen && history.length > 0) {
       const previousChat = history[0];
       setQuery(previousChat.query);
@@ -92,7 +89,7 @@ const LegalLensPage = () => {
   const handleNewChat = () => {
     setQuery('');
     setResponse('');
-    setDisplayedQuery(''); // Clear the displayed query
+    setDisplayedQuery('');
     setHasQueried(false);
   };
 
@@ -148,17 +145,15 @@ const LegalLensPage = () => {
         </button>
 
         <button onClick={async () => {
-            const {error} = await supabase.auth.signOut();
+            const { error } = await supabase.auth.signOut();
             if (!error) {
               navigate('/');
-            }
-            else {
+            } else {
               console.error(error);
               navigate('/');
             }
           }} className="logout-button">Logout</button>
 
-        {/* Chat Sidebar */}
         {isChatSidebarOpen && (
           <div className="chat-sidebar">
             <div className="chat-sidebar-header">
@@ -170,14 +165,12 @@ const LegalLensPage = () => {
           </div>
         )}
 
-        {/* Toggle sidebar button is only shown after a query has been made */}
         {history.length > 0 && (
           <button className="toggle-sidebar" onClick={toggleSidebar}>
             {isSidebarOpen ? 'Hide History' : 'Show History'}
           </button>
         )}
 
-        {/* Render the sidebar only if the toggle button is clicked */}
         {isSidebarOpen && (
           <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
@@ -193,7 +186,6 @@ const LegalLensPage = () => {
           </div>
         )}
 
-        {/* Render the response section at the top if a query has been made */}
         {hasQueried && (
           <div className="response-section">
             {isLoading ? (
@@ -201,15 +193,14 @@ const LegalLensPage = () => {
             ) : (
               <div>
                 <h3>Query:</h3>
-                <p>{displayedQuery}</p> {/* Display the stored query */}
+                <p>{displayedQuery}</p>
                 <h3>Response:</h3>
-                <p>{response}</p>
+                <ReactMarkdown>{response}</ReactMarkdown> {/* Render Markdown here */}
               </div>
             )}
           </div>
         )}
 
-        {/* Conditionally render the original page layout if no query has been made */}
         {!hasQueried && (
           <>
             <div className="icon-section">
@@ -234,7 +225,6 @@ const LegalLensPage = () => {
           </>
         )}
 
-        {/* Always render the query section, but move it to the bottom if a query has been made */}
         <div className="query-section">
           <Uploadbutton />
           <input
@@ -243,6 +233,7 @@ const LegalLensPage = () => {
             className="query-input"
             value={query}
             onChange={handleQueryChange}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendQuery()} // Trigger send on Enter
           />
           <button onClick={handleSendQuery} className="send-button">Send</button>
         </div>
