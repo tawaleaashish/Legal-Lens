@@ -147,6 +147,17 @@ const LegalLensPage = () => {
           ☰
         </button>
 
+        <button onClick={async () => {
+            const {error} = await supabase.auth.signOut();
+            if (!error) {
+              navigate('/');
+            }
+            else {
+              console.error(error);
+              navigate('/');
+            }
+          }} className="logout-button">Logout</button>
+
         {/* Chat Sidebar */}
         {isChatSidebarOpen && (
           <div className="chat-sidebar">
@@ -234,16 +245,6 @@ const LegalLensPage = () => {
             onChange={handleQueryChange}
           />
           <button onClick={handleSendQuery} className="send-button">Send</button>
-          <button onClick={async () => {
-            const {error} = await supabase.auth.signOut();
-            if (!error) {
-              navigate('/');
-            }
-            else {
-              console.error(error);
-              navigate('/');
-            }
-          }} className="send-button remove-when-done">Logout</button>
         </div>
       </main>
     </div>

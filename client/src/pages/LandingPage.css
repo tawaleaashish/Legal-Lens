@@ -1,4 +1,4 @@
- /* General styles */
+   /* General styles */
 /* Container for the entire page */
 .legal-lens-page {
   font-family: 'Roboto', sans-serif;
@@ -261,7 +261,6 @@ body {
   cursor: pointer;
   border-radius: 25px;
   transition: background-color 0.3s ease;
-  cursor: pointer;
   
   opacity: 5;
 }
@@ -290,14 +289,33 @@ body {
 
 .send-button{
   width: 14%;
-  background-color: rgb(31, 31, 31);
+  background-color: #1FC1A2;
   color: white;
   margin: 1%;
 }
 
 .send-button:hover{
   width: 14%;
-  background-color: rgb(0, 0, 0);
+  background-color: #07A688;
   color: white;
   margin: 1%;
+}
+
+.logout-button {
+  position: fixed;
+  top: 13px;
+  right: 10px; /* Change `left: 1000px` to `right: 20px` */
+  z-index: 1000;
+  padding: 15px 25px;
+  background-color: #1FC1A2;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: background-color 0.3s ease;
+  opacity: 1; /* Correct the opacity value */
+}
+.logout-button:hover{
+  background-color: #07A688;
 }
