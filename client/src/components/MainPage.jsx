@@ -56,15 +56,15 @@ const MainPageContent = () => {
 
   const handleLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       });
 
       if (error) {
         console.error('Login Failed:', error.message);
       } else {
-        console.log('Redirecting to /home...');
-        navigate('/home'); // Navigate after successful login
+        // console.log('Redirecting to /home...');
+        // navigate('/home'); // Navigate after successful login
       }
     } catch (error) {
       console.error('Unexpected Error:', error);
