@@ -1,102 +1,60 @@
-
-
-#                                  TESTER CODE TO TEST WHETHER GOOGLE API KEY IS WORKING OR NOT
-# import os
-# from flask import Flask, request, jsonify
-# from flask_cors import CORS
-# from dotenv import load_dotenv
-# import google.generativeai as genai
-
-# # Load environment variables
-# load_dotenv()
-
-# # Initialize Flask app
-# app = Flask(__name__)
-# CORS(app)  # Enable CORS for all routes
-
-# # Print Google API Key for debugging
-# google_api_key = os.getenv("GOOGLE_API_KEY")
-# print("Google API Key:", google_api_key)
-
-# # Configure the Gemini API with the Google API key
-# try:
-#     genai.configure(api_key=google_api_key)
-# except Exception as e:
-#     print(f"Error initializing Google API: {e}")
-
-# def generate_llm_response(query, context):
-#     try:
-#         # Prepare the prompt
-#         prompt = f"Query: {query}\nContext: {context}\nPlease provide a response based on the given context."
-        
-#         # Initialize the model
-#         model = genai.GenerativeModel('gemini-1.5-flash')
-        
-#         # Generate content
-#         response = model.generate_content(prompt)
-        
-#         # Extract and return the generated text
-#         return response.text
-#     except Exception as e:
-#         print(f"Error in generating Gemini response: {e}")
-#         return "I'm sorry, but I couldn't generate a response at this time."
-
-# @app.route('/api/query', methods=['POST'])
-# def handle_query():
-#     data = request.json
-#     query = data.get('query')
-
-#     # Use an empty context for now
-#     context = []
-
-#     # Generate response using Google API
-#     llm_response = generate_llm_response(query, context)
-
-#     return jsonify({
-#         'response': llm_response
-#     })
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-
-#                                                             MAIN CODE
 import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from dotenv import load_dotenv
-import google.generativeai as genai
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from supabase import create_client, Client
 from pinecone import Pinecone
 from uuid import uuid4
 from datetime import datetime
+import google.generativeai as genai
+from dotenv import load_dotenv
+from voyageai import Client as Voyage
 
 # Load environment variables
 load_dotenv()
 
-# Initialize Flask app
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# Initialize FastAPI app
+app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Initialize Supabase client
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_KEY")
+supabase_url = 'https://nazhdcijmldlykjzkxxg.supabase.co'
+supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hemhkY2lqbWxkbHlranpreHhnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNTI2MzM2MSwiZXhwIjoyMDQwODM5MzYxfQ.s3nfj31QjNZuFaB6dOOQGuRqK5_Eysj6tzgTtbiSs-A'
 supabase: Client = create_client(supabase_url, supabase_key)
 
 # Initialize Pinecone
-pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-index = pinecone.Index("legal-lens-index")
+pinecone = Pinecone(api_key="0778b6c9-795c-4954-bf9d-3f1c9bfd09d6")
+index = pinecone.Index("legallens")
 
 # Configure the Gemini API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+genai.configure(api_key='AIzaSyBbTYvtNqksIeWj7NItfl8wWaTyk9D6-DQ')
 
-def create_user_table_if_not_exists(user_email):
+# Configure Voyage AI
+voyage = Voyage(api_key="pa-BGEn0qb_-0HgMlpzE_TR9H1xKqr-qI7xmeRvYkb0aww")
+
+class QueryRequest(BaseModel):
+    user_email: str | None
+    query: str | None
+    chat_id: str | None = None
+
+class NewChatRequest(BaseModel):
+    user_email: str
+
+def create_user_table_if_not_exists(user_email: str):
     table_name = f"user_{user_email.replace('@', '_').replace('.', '_')}"
     
     # Check if the table exists
     response = supabase.table(table_name).select("*").limit(1).execute()
     
-    if "error" in response:
+    if "error" in response.model_dump(mode="python"):
         # Table doesn't exist, so create it
         supabase.table(table_name).create({
             "id": "uuid",
@@ -112,18 +70,17 @@ def create_user_table_if_not_exists(user_email):
     
     return table_name
 
-def upload_file_to_pinecone(user_email, chat_id, file_name, file_content):
+def upload_file_to_pinecone(user_email: str, chat_id: str, file_name: str, file_content: str):
     namespace = f"{user_email}_{chat_id}_{file_name}"
     
-    # Here you would typically use a text embedding model to convert the file_content to a vector
-    # For this example, we'll use a dummy vector
-    dummy_vector = [0.1] * 1536  # Assuming 1536-dimensional embeddings
+    # Generate embeddings using Voyage AI
+    embeddings = voyage.embed(file_content)
     
     index.upsert(
         vectors=[
             {
                 "id": str(uuid4()),
-                "values": dummy_vector,
+                "values": embeddings,
                 "metadata": {"content": file_content}
             }
         ],
@@ -132,7 +89,7 @@ def upload_file_to_pinecone(user_email, chat_id, file_name, file_content):
     
     print(f"File uploaded to Pinecone namespace: {namespace}")
 
-def create_new_chat(user_email, table_name):
+def create_new_chat(user_email: str, table_name: str):
     chat_id = str(uuid4())
     chat_name = f"Chat {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     
@@ -147,7 +104,7 @@ def create_new_chat(user_email, table_name):
     print(f"New chat created with ID: {chat_id}")
     return chat_id
 
-def save_query_response(user_email, table_name, chat_id, is_query, content):
+def save_query_response(user_email: str, table_name: str, chat_id: str, is_query: bool, content: str):
     supabase.table(table_name).insert({
         "chat_id": chat_id,
         "data": {"content": content},
@@ -157,17 +114,16 @@ def save_query_response(user_email, table_name, chat_id, is_query, content):
     
     print(f"{'Query' if is_query else 'Response'} saved for chat ID: {chat_id}")
 
-def get_chat_history(user_email, table_name, chat_id):
+def get_chat_history(user_email: str, table_name: str, chat_id: str):
     response = supabase.table(table_name).select("*").eq("chat_id", chat_id).order("created_at").execute()
     return response.data
 
-def search_pinecone(user_email, chat_id, query, top_k=8):
-    # Here you would typically use a text embedding model to convert the query to a vector
-    # For this example, we'll use a dummy vector
-    dummy_vector = [0.1] * 1536  # Assuming 1536-dimensional embeddings
+def search_pinecone(user_email: str, chat_id: str, query: str, top_k=8):
+    # Generate embeddings for the query using Voyage AI
+    query_embedding = voyage.embed(query)
     
     results = index.query(
-        vector=dummy_vector,
+        vector=query_embedding,
         top_k=top_k,
         include_metadata=True,
         namespace=f"{user_email}_{chat_id}_*"  # Search all namespaces for this user and chat
@@ -175,13 +131,13 @@ def search_pinecone(user_email, chat_id, query, top_k=8):
     
     return [result.metadata["content"] for result in results.matches]
 
-def generate_llm_response(query, context):
+def generate_llm_response(query: str, context: list):
     try:
         # Prepare the prompt
         prompt = f"Query: {query}\nContext: {context}\nPlease provide a response based on the given context."
         
         # Initialize the model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # Generate content
         response = model.generate_content(prompt)
@@ -192,59 +148,62 @@ def generate_llm_response(query, context):
         print(f"Error in generating Gemini response: {e}")
         return "I'm sorry, but I couldn't generate a response at this time."
 
-@app.route('/api/query', methods=['POST'])
-def handle_query():
-    data = request.json
-    user_email = data.get('user_email', 'default@example.com')  # In production, get this from authentication
-    query = data.get('query')
-    chat_id = data.get('chat_id')
+# @app.post("/api/query")
+# async def query2(query: QueryRequest):
+#     print(query)
+
+@app.post("/api/query")
+async def handle_query(request: QueryRequest):
+    user_email = request.user_email
+    query = request.query
+    chat_id = request.chat_id
+    
+    table_name = create_user_table_if_not_exists(user_email)
     
     if not chat_id:
-        chat_id = create_new_chat(user_email, create_user_table_if_not_exists(user_email))
+        chat_id = create_new_chat(user_email, table_name)
     
     # Save the query
-    save_query_response(user_email, create_user_table_if_not_exists(user_email), chat_id, True, query)
+    save_query_response(user_email, table_name, chat_id, True, query)
     
     # Search Pinecone and generate response
     search_results = search_pinecone(user_email, chat_id, query)
     llm_response = generate_llm_response(query, search_results)
     
     # Save the response
-    save_query_response(user_email, create_user_table_if_not_exists(user_email), chat_id, False, llm_response)
+    save_query_response(user_email, table_name, chat_id, False, llm_response)
     
-    return jsonify({
-        'response': llm_response,
-        'chat_id': chat_id
-    })
+    return {"response": llm_response, "chat_id": chat_id}
 
-@app.route('/api/chat_history', methods=['GET'])
-def handle_chat_history():
-    user_email = request.args.get('user_email', 'default@example.com')  # In production, get this from authentication
-    chat_id = request.args.get('chat_id')
-    
+@app.get("/api/chat_history")
+async def handle_chat_history(user_email: str, chat_id: str):
     if not chat_id:
-        return jsonify({'error': 'chat_id is required'}), 400
+        raise HTTPException(status_code=400, detail="chat_id is required")
     
-    history = get_chat_history(user_email, create_user_table_if_not_exists(user_email), chat_id)
-    return jsonify(history)
+    table_name = create_user_table_if_not_exists(user_email)
+    history = get_chat_history(user_email, table_name, chat_id)
+    return {"history": history}
 
-@app.route('/api/new_chat', methods=['POST'])
-def handle_new_chat():
-    data = request.json
-    user_email = data.get('user_email', 'default@example.com')  # In production, get this from authentication
+@app.post("/api/new_chat")
+async def handle_new_chat(request: NewChatRequest):
+    user_email = request.user_email
+    table_name = create_user_table_if_not_exists(user_email)
+    chat_id = create_new_chat(user_email, table_name)
+    return {"chat_id": chat_id}
+
+@app.post("/api/upload_file")
+async def handle_file_upload(user_email: str, chat_id: str, file: UploadFile = File(...)):
+    contents = await file.read()
+    file_content = contents.decode("utf-8")
     
-    chat_id = create_new_chat(user_email, create_user_table_if_not_exists(user_email))
-    return jsonify({'chat_id': chat_id})
+    # Create markdown file
+    markdown_content = f"# {file.filename}\n\n{file_content}"
+    
+    # Upload to Pinecone
+    upload_file_to_pinecone(user_email, chat_id, file.filename, markdown_content)
+    
+    return {"message": "File uploaded successfully"}
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -270,6 +270,8 @@ body {
   margin-left: 5px;
   top: 75px;
   left: 10px;
+  background-color: #044438;
+  color: white;
   /* other styling properties */
 }
 
@@ -279,6 +281,8 @@ body {
   margin-left: 15px;
   top: 75px;
   left: 115px;
+  background-color: #044438;
+  color: white;
 }
 .chat-container {
   flex-grow: 1;
