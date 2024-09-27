@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from supabase import create_client, Client
+from supabase import create_client, Client , PostgrestAPIError as APIError
 from pinecone import Pinecone
 from uuid import uuid4
 from datetime import datetime
@@ -52,21 +52,42 @@ def create_user_table_if_not_exists(user_email: str):
     table_name = f"user_{user_email.replace('@', '_').replace('.', '_')}"
     
     # Check if the table exists
-    response = supabase.table(table_name).select("*").limit(1).execute()
+    try:
+        # Try to select from the table to see if it exists
+        supabase.table(table_name).select("*").limit(1).execute()
+        print(f"Table public.{table_name} already exists.")
+        
+    except APIError as e:
+        error_message = str(e)
+        # Check if the error is a "table does not exist" error
+        if 'relation' in error_message and 'does not exist' in error_message:
+            try:
+                # Table doesn't exist, so create it
+                # Table doesn't exist, so create it using raw SQL
+                create_table_sql = f"""
+                CREATE TABLE IF NOT EXISTS public.{table_name} (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    chat_id UUID,
+                    chat_name TEXT,
+                    data JSON,
+                    query_response BOOLEAN,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+                """
+                
+                # Run the SQL command to create the table
+                supabase.rpc(create_table_sql).execute()
+                print(f"Table public.{table_name} created successfully.")
+            except Exception as create_error:
+                print(f"Error creating table public.{table_name}: {create_error}")
+                raise HTTPException(status_code=500, detail=f"Error creating user table: {str(create_error)}")
+        else:
+            # If it's a different kind of error, re-raise it
+            raise HTTPException(status_code=500, detail=f"API Error: {str(e)}")
     
-    if "error" in response.model_dump(mode="python"):
-        # Table doesn't exist, so create it
-        supabase.table(table_name).create({
-            "id": "uuid",
-            "chat_id": "uuid",
-            "chat_name": "text",
-            "data": "jsonb",
-            "query_response": "boolean",
-            "created_at": "timestamp with time zone"
-        })
-        print(f"Table {table_name} created successfully.")
-    else:
-        print(f"Table {table_name} already exists.")
+    except Exception as e:
+        print(f"Unexpected error with table public.{table_name}: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error with user table: {str(e)}")
     
     return table_name
 
@@ -118,18 +139,30 @@ def get_chat_history(user_email: str, table_name: str, chat_id: str):
     response = supabase.table(table_name).select("*").eq("chat_id", chat_id).order("created_at").execute()
     return response.data
 
-def search_pinecone(user_email: str, chat_id: str, query: str, top_k=8):
+def search_pinecone(user_email: str, chat_id: str, query: str, k=8):
     # Generate embeddings for the query using Voyage AI
-    query_embedding = voyage.embed(query)
-    
-    results = index.query(
-        vector=query_embedding,
-        top_k=top_k,
-        include_metadata=True,
-        namespace=f"{user_email}_{chat_id}_*"  # Search all namespaces for this user and chat
-    )
-    
-    return [result.metadata["content"] for result in results.matches]
+    query_embedding = voyage.embed(query,model="voyage-law-2",input_type="document").embeddings
+
+    namespaces=[f"{user_email}_{chat_id}_*","cpc"]
+    combined_results=[]
+    for namespace in namespaces:
+        results = index.query(
+            vector=query_embedding,
+            namespace=namespace,
+            top_k=k,
+            include_metadata=True   # Search all namespaces for this user and chat
+        )
+
+        for match in results['matches']:
+            combined_results.append({
+                'namespace': namespace,
+                'id': match['id'],
+                'score': match['score'],
+                'metadata': match.get('metadata',{})
+            })
+    combined_results = sorted(combined_results, key=lambda x: x['score'], reverse=True)
+    combined_results=combined_results[:8]
+    return [result['metadata'] for result in combined_results if 'metadata' in result]
 
 def generate_llm_response(query: str, context: list):
     try:

@@ -29,11 +29,22 @@ const LegalLensPage = () => {
   const logoText = useRef(null);
   const logoTag = useRef(null);
 
+  const ensureUserTable = async (email) => {
+    try {
+      // This endpoint will create the table if it doesn't exist
+      await axios.post(`${API_BASE_URL}/new_chat`, { user_email: email });
+      console.log(`Ensured table exists for user: ${email}`);
+    } catch (error) {
+      console.error('Error ensuring user table exists:', error);
+    }
+  };
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
+        await ensureUserTable(user.email);
       } else {
         navigate('/login'); // Redirect to login page if user is not authenticated
       }
@@ -66,9 +77,10 @@ const LegalLensPage = () => {
     });
 
     // Set up Supabase auth listener
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         setUserEmail(session.user.email);
+        await ensureUserTable(session.user.email);
       } else if (event === 'SIGNED_OUT') {
         navigate('/login');
       }
@@ -137,6 +149,7 @@ const LegalLensPage = () => {
       setDisplayedQuery('');
       setHasQueried(false);
       setHistory([]);
+      navigate('/home')
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
@@ -186,7 +199,7 @@ const LegalLensPage = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   if (!userEmail) {
@@ -258,20 +271,20 @@ const LegalLensPage = () => {
 
         {!hasQueried && (
           <>
-            <div className="icon-section">
-              <img
-                ref={logoItem}
-                src={logo}
-                alt="Legal Lens Icon"
-                className="legal-lens-icon"
-              />
-            </div>
-            <h1 ref={logoText} className="heading">
-              Legal Lens
-            </h1>
-            <p ref={logoTag} className="tagline">
-              Powered by Gemini 1.5 Pro
-            </p>
+          <div className="icon-section">
+            <img
+              ref={logoItem}
+              src={logo}
+              alt="Legal Lens Icon"
+              className="legal-lens-icon"
+            />
+          </div>
+          <h1 ref={logoText} className="heading">
+            Legal Lens
+          </h1>
+          <p ref={logoTag} className="tagline">
+            Decoding Legal Jargon
+          </p>
             <div className="action-buttons">
               <button className="action-button" onClick={() => setQuery("Summarize my contract")}>Summarize my contract</button>
               <button className="action-button" onClick={() => setQuery("Identify key clauses")}>Key clause identification</button>
