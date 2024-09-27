@@ -240,16 +240,15 @@ const LegalLensPage = () => {
         {isSidebarOpen && (
           <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
-              <h3>Chat History</h3>
             </div>
             <div className="history-list">
-              {history.map((item, index) => (
+              {/* {history.map((item, index) => (
                 <div key={index} className="history-item">
                   <strong>Query:</strong> {item.query}
                   <br />
                   <strong>Response:</strong> {item.response}
                 </div>
-              ))}
+              ))} */}
             </div>
           </div>
         )}

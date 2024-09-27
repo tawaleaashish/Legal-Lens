@@ -139,11 +139,11 @@ def get_chat_history(user_email: str, table_name: str, chat_id: str):
     response = supabase.table(table_name).select("*").eq("chat_id", chat_id).order("created_at").execute()
     return response.data
 
-def search_pinecone(user_email: str, chat_id: str, query: str, k=8):
+def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
     # Generate embeddings for the query using Voyage AI
     query_embedding = voyage.embed(query,model="voyage-law-2",input_type="document").embeddings
 
-    namespaces=[f"{user_email}_{chat_id}_*","cpc"]
+    namespaces=[f"{user_email}_{chat_id}_*","cpc","coi","crpc","ida","iea","ipc","mva","nia","preamble"]
     combined_results=[]
     for namespace in namespaces:
         results = index.query(
