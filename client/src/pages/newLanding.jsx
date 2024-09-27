@@ -28,7 +28,7 @@ const LegalLensPage = () => {
   const logoItem = useRef(null);
   const logoText = useRef(null);
   const logoTag = useRef(null);
-
+  const [uploadedFile, setUploadedFile] = useState(null);
   const ensureUserTable = async (email) => {
     try {
       // This endpoint will create the table if it doesn't exist
@@ -165,7 +165,7 @@ const LegalLensPage = () => {
     formData.append('file', file);
 
     try {
-      await axios.post(`${API_BASE_URL}/upload_file`, formData, {
+      const response=await axios.post(`${API_BASE_URL}/upload_file`, formData, {
         params: {
           user_email: userEmail,
           chat_id: currentChatId,
@@ -174,10 +174,12 @@ const LegalLensPage = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      alert('File uploaded successfully');
+      setUploadedFile(response.data.file_name);
+      console.log('File uploaded:', response.data.file_name);
+      alert(`File uploaded successfully: ${response.data.file_name}`);
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file');
+      alert(`Error uploading file: ${error.message}`);
     }
   };
 
@@ -290,11 +292,17 @@ const LegalLensPage = () => {
               <button className="action-button" onClick={() => setQuery("Identify key clauses")}>Key clause identification</button>
               <button className="action-button" onClick={() => setQuery("Analyze legal documents")}>Analyze legal documents</button>
             </div>
+            
           </>
         )}
 
         <div className="query-section">
           <Uploadbutton onFileUpload={handleFileUpload} />
+          {
+            <div className="uploaded-file">
+              <p>Uploaded: {uploadedFile}</p>
+            </div>
+          }
           <input
             type="text"
             placeholder="Ask me your queries..."
