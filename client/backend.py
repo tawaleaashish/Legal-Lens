@@ -69,7 +69,7 @@ def create_user_table_if_not_exists(user_email: str):
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                     chat_id UUID,
                     chat_name TEXT,
-                    data JSONB,
+                    data JSON,
                     query_response BOOLEAN,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
@@ -139,18 +139,30 @@ def get_chat_history(user_email: str, table_name: str, chat_id: str):
     response = supabase.table(table_name).select("*").eq("chat_id", chat_id).order("created_at").execute()
     return response.data
 
-def search_pinecone(user_email: str, chat_id: str, query: str, top_k=8):
+def search_pinecone(user_email: str, chat_id: str, query: str, k=8):
     # Generate embeddings for the query using Voyage AI
-    query_embedding = voyage.embed(query)
-    
-    results = index.query(
-        vector=query_embedding,
-        top_k=top_k,
-        include_metadata=True,
-        namespace=f"{user_email}_{chat_id}_*"  # Search all namespaces for this user and chat
-    )
-    
-    return [result.metadata["content"] for result in results.matches]
+    query_embedding = voyage.embed(query,model="voyage-law-2",input_type="document").embeddings
+
+    namespaces=[f"{user_email}_{chat_id}_*","cpc"]
+    combined_results=[]
+    for namespace in namespaces:
+        results = index.query(
+            vector=query_embedding,
+            namespace=namespace,
+            top_k=k,
+            include_metadata=True   # Search all namespaces for this user and chat
+        )
+
+        for match in results['matches']:
+            combined_results.append({
+                'namespace': namespace,
+                'id': match['id'],
+                'score': match['score'],
+                'metadata': match.get('metadata',{})
+            })
+    combined_results = sorted(combined_results, key=lambda x: x['score'], reverse=True)
+    combined_results=combined_results[:8]
+    return [result['metadata'] for result in combined_results if 'metadata' in result]
 
 def generate_llm_response(query: str, context: list):
     try:

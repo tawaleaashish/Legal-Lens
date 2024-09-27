@@ -149,6 +149,7 @@ const LegalLensPage = () => {
       setDisplayedQuery('');
       setHasQueried(false);
       setHistory([]);
+      navigate('/home')
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
@@ -270,20 +271,20 @@ const LegalLensPage = () => {
 
         {!hasQueried && (
           <>
-            <div className="icon-section">
-              <img
-                ref={logoItem}
-                src={logo}
-                alt="Legal Lens Icon"
-                className="legal-lens-icon"
-              />
-            </div>
-            <h1 ref={logoText} className="heading">
-              Legal Lens
-            </h1>
-            <p ref={logoTag} className="tagline">
-              Powered by Gemini 1.5 Pro
-            </p>
+          <div className="icon-section">
+            <img
+              ref={logoItem}
+              src={logo}
+              alt="Legal Lens Icon"
+              className="legal-lens-icon"
+            />
+          </div>
+          <h1 ref={logoText} className="heading">
+            Legal Lens
+          </h1>
+          <p ref={logoTag} className="tagline">
+            Decoding Legal Jargon
+          </p>
             <div className="action-buttons">
               <button className="action-button" onClick={() => setQuery("Summarize my contract")}>Summarize my contract</button>
               <button className="action-button" onClick={() => setQuery("Identify key clauses")}>Key clause identification</button>

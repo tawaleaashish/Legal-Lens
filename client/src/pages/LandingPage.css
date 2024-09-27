@@ -125,9 +125,9 @@ body {
   padding: 10px;
   border-radius: 25px;
   width: 100%; /* Ensure it doesn't overflow */
-  max-width: 600px;
+  max-width: 100%;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin: 20px 0;
+  margin: 5px 0;
   bottom: 20px; /* Fixed at the bottom */
   /* left: 50%;
   transform: translateX(-50%);
@@ -292,14 +292,14 @@ body {
 }
 
 .send-button{
-  width: 14%;
+  width: 20%;
   background-color: #1FC1A2;
   color: white;
   margin: 1%;
 }
 
 .send-button:hover{
-  width: 14%;
+  width: 20%;
   background-color: #07A688;
   color: white;
   margin: 1%;
