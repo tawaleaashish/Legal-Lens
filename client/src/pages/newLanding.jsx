@@ -29,11 +29,22 @@ const LegalLensPage = () => {
   const logoText = useRef(null);
   const logoTag = useRef(null);
 
+  const ensureUserTable = async (email) => {
+    try {
+      // This endpoint will create the table if it doesn't exist
+      await axios.post(`${API_BASE_URL}/new_chat`, { user_email: email });
+      console.log(`Ensured table exists for user: ${email}`);
+    } catch (error) {
+      console.error('Error ensuring user table exists:', error);
+    }
+  };
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
+        await ensureUserTable(user.email);
       } else {
         navigate('/login'); // Redirect to login page if user is not authenticated
       }
@@ -66,9 +77,10 @@ const LegalLensPage = () => {
     });
 
     // Set up Supabase auth listener
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         setUserEmail(session.user.email);
+        await ensureUserTable(session.user.email);
       } else if (event === 'SIGNED_OUT') {
         navigate('/login');
       }
@@ -186,7 +198,7 @@ const LegalLensPage = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   if (!userEmail) {
