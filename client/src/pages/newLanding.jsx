@@ -136,13 +136,15 @@ const LegalLensPage = () => {
   };
 
   const handleNewChat = async () => {
-    if (!userEmail) return;
 
+    if (!userEmail) return;
+    let chat_id
     try {
       const res = await axios.post(`${API_BASE_URL}/new_chat`, {
         user_email: userEmail,
       });
-
+      // console.log(res.data.chat_id)
+      chat_id=res.data.chat_id
       setCurrentChatId(res.data.chat_id);
       setQuery('');
       setResponse('');
@@ -153,27 +155,28 @@ const LegalLensPage = () => {
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
+    return(chat_id)
+    
   };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file || !userEmail) return;
-
+    let new_chat_id;
     if (!currentChatId) {
-      await handleNewChat();
+      new_chat_id=await handleNewChat();
     }
 
     setIsLoading(true);
 
     const formData = new FormData();
     formData.append('user_email', userEmail);
-    formData.append('chat_id', currentChatId);
+    formData.append('chat_id', currentChatId??new_chat_id);
+    formData.append('file',file);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/upload_file`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        
       });
 
       setUploadedFile(response.data.file_name);
@@ -302,7 +305,7 @@ const LegalLensPage = () => {
         )}
 
         <div className="query-section">
-          <Uploadbutton onFileUpload={handleFileUpload} />
+          <Uploadbutton fileHandler={handleFileUpload} />
           {/* {
             <div className="uploaded-file">
               <p>Uploaded: {uploadedFile}</p>
