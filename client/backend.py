@@ -9,6 +9,8 @@ from datetime import datetime
 import google.generativeai as genai
 from dotenv import load_dotenv
 from voyageai import Client as Voyage
+import pymupdf as fitz
+import pymupdf4llm
 
 # New imports
 from pathlib import Path
@@ -287,7 +289,9 @@ async def handle_file_upload(
         raise HTTPException(status_code=400, detail="No file uploaded")
 
     contents = await file.read()
-    file_content = contents.decode("utf-8")
+    # file_content = contents.decode("utf-8")
+    doc=fitz.open(stream=contents)
+    file_content=pymupdf4llm.to_markdown(doc)
 
     try:
         upload_file_to_pinecone(user_email, chat_id, file.filename, file_content)
@@ -298,6 +302,7 @@ async def handle_file_upload(
         
         # Save the upload event and LLM response to the chat history
         table_name = "chats_data"
+        print(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}")
         save_query_response(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}")
         # save_query_response(user_email, table_name, chat_id, False, llm_response)
 

@@ -30,7 +30,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-export default function Uploadbutton() {
+export default function Uploadbutton({fileHandler}) {
   return (
     <StyledButton
       component="label">
@@ -38,7 +38,9 @@ export default function Uploadbutton() {
     
       <VisuallyHiddenInput
         type="file"
-        onChange={(event) => console.log(event.target.files)}
+        onChange={(event) => {console.log(event.target.files);
+          fileHandler(event);
+        }}
         multiple
       />
     </StyledButton>
