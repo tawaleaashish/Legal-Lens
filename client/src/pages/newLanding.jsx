@@ -28,7 +28,7 @@ const LegalLensPage = () => {
   const logoItem = useRef(null);
   const logoText = useRef(null);
   const logoTag = useRef(null);
-
+  const [uploadedFile, setUploadedFile] = useState(null);
   const ensureUserTable = async (email) => {
     try {
       // This endpoint will create the table if it doesn't exist
@@ -136,13 +136,15 @@ const LegalLensPage = () => {
   };
 
   const handleNewChat = async () => {
-    if (!userEmail) return;
 
+    if (!userEmail) return;
+    let chat_id
     try {
       const res = await axios.post(`${API_BASE_URL}/new_chat`, {
         user_email: userEmail,
       });
-
+      // console.log(res.data.chat_id)
+      chat_id=res.data.chat_id
       setCurrentChatId(res.data.chat_id);
       setQuery('');
       setResponse('');
@@ -153,31 +155,40 @@ const LegalLensPage = () => {
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
+    return(chat_id)
+    
   };
 
-  const handleFileUpload = async (file) => {
-    if (!userEmail) return;
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !userEmail) return;
+    let new_chat_id;
     if (!currentChatId) {
-      await handleNewChat();
+      new_chat_id=await handleNewChat();
     }
 
+    setIsLoading(true);
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('user_email', userEmail);
+    formData.append('chat_id', currentChatId??new_chat_id);
+    formData.append('file',file);
 
     try {
-      await axios.post(`${API_BASE_URL}/upload_file`, formData, {
-        params: {
-          user_email: userEmail,
-          chat_id: currentChatId,
-        },
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await axios.post(`${API_BASE_URL}/upload_file`, formData, {
+        
       });
-      alert('File uploaded successfully');
+
+      setUploadedFile(response.data.file_name);
+      console.log('File uploaded:', response.data.file_name);
+      setResponse(response.data.message);
+      setHasQueried(true);
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file');
+      setResponse(`Error uploading file: ${error.message}`);
+      setHasQueried(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -240,16 +251,15 @@ const LegalLensPage = () => {
         {isSidebarOpen && (
           <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
-              <h3>Chat History</h3>
             </div>
             <div className="history-list">
-              {history.map((item, index) => (
+              {/* {history.map((item, index) => (
                 <div key={index} className="history-item">
                   <strong>Query:</strong> {item.query}
                   <br />
                   <strong>Response:</strong> {item.response}
                 </div>
-              ))}
+              ))} */}
             </div>
           </div>
         )}
@@ -290,11 +300,17 @@ const LegalLensPage = () => {
               <button className="action-button" onClick={() => setQuery("Identify key clauses")}>Key clause identification</button>
               <button className="action-button" onClick={() => setQuery("Analyze legal documents")}>Analyze legal documents</button>
             </div>
+            
           </>
         )}
 
         <div className="query-section">
-          <Uploadbutton onFileUpload={handleFileUpload} />
+          <Uploadbutton fileHandler={handleFileUpload} />
+          {/* {
+            <div className="uploaded-file">
+              <p>Uploaded: {uploadedFile}</p>
+            </div>
+          } */}
           <input
             type="text"
             placeholder="Ask me your queries..."
