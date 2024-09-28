@@ -44,7 +44,7 @@ pinecone = Pinecone(api_key="0778b6c9-795c-4954-bf9d-3f1c9bfd09d6")
 index = pinecone.Index("legallens")
 
 # Configure the Gemini API
-genai.configure(api_key='AIzaSyBbTYvtNqksIeWj7NItfl8wWaTyk9D6-DQ')
+genai.configure(api_key='AIzaSyAy8IgFIbB2AKwyUZEPrJIFjIhOXp2PQ9E')
 
 # Configure Voyage AI
 voyage = Voyage(api_key="pa-BGEn0qb_-0HgMlpzE_TR9H1xKqr-qI7xmeRvYkb0aww")
@@ -155,43 +155,55 @@ def upload_file_to_pinecone(user_email: str, chat_id: str, file_name: str, file_
     chunks = split_text_into_chunks(markdown_content)
     
     # Generate embeddings and upsert to Pinecone
-    # for chunk in chunks:
-    #     # Generate embeddings using Voyage AI
-    #     parts = voyage.embed(chunk,model="voyage-law-2",input_type="document").embeddings
+    for chunk in chunks:
+        # Generate embeddings using Voyage AI
+        parts = voyage.embed(chunk,model="voyage-law-2",input_type="document").embeddings
         
-    #     for part in parts:
-    #         index.upsert(
-    #             vectors=[
-    #                 {
-    #                     "id": str(uuid4()),
-    #                     "values": part,
-    #                     "metadata": {"content": chunk}
-    #                 }
-    #             ],
-    #             namespace=namespace
-    #         )
+        for part in parts:
+            index.upsert(
+                vectors=[
+                    {
+                        "id": str(uuid4()),
+                        "values": part,
+                        "metadata": {"content": chunk}
+                    }
+                ],
+                namespace=namespace
+            )
     
     print(f"File uploaded to Pinecone namespace: {namespace}")
 
-def create_new_chat(user_email: str, table_name: str):
+def generate_chat_name(query: str) -> str:
+    # Use Gemini to generate a chat name based on the first query
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = f"rewrite this query: {query} in 5 words without changing words."
+        response = model.generate_content(prompt)
+        return response.text.strip()[:50]  # Limit to 50 characters
+    except Exception as e:
+        print(f"Error generating chat name: {e}")
+        return f"Chat {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+
+def create_new_chat(user_email: str, query: str):
     chat_id = str(uuid4())
-    chat_name = f"Chat {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    chat_name = generate_chat_name(query)
     
-    supabase.table(table_name).insert({
+    supabase.table("chats_data").insert({
         "chat_id": chat_id,
         "chat_name": chat_name,
-        "user_email":user_email,
+        "user_email": user_email,
         "data": {},
         "query_response": False,
         "created_at": datetime.now().isoformat()
     }).execute()
     
-    print(f"New chat created with ID: {chat_id}")
-    return chat_id
+    print(f"New chat created with ID: {chat_id} and name: {chat_name}")
+    return chat_id, chat_name
 
-def save_query_response(user_email: str, table_name: str, chat_id: str, is_query: bool, content: str):
+def save_query_response(user_email: str, table_name: str, chat_id: str, is_query: bool, content: str, chat_name: str):
     supabase.table(table_name).insert({
         "chat_id": chat_id,
+        "chat_name":chat_name,
         "user_email":user_email,
         "data": {"content": content},
         "query_response": is_query,
@@ -203,6 +215,28 @@ def save_query_response(user_email: str, table_name: str, chat_id: str, is_query
 def get_chat_history(user_email: str, table_name: str, chat_id: str):
     response = supabase.table(table_name).select("*").eq("chat_id", chat_id).eq("user_email",user_email).order("created_at").execute()
     return response.data
+
+def get_user_chats(user_email: str):
+    try:
+        response = supabase.table("chats_data").select(
+            "chat_id", "chat_name"
+        ).eq("user_email", user_email).eq("query_response",True).execute()
+        
+        # Process the response to get distinct chat_id and chat_name pairs
+        distinct_chats = {}
+        for row in response.data:
+            chat_id = row['chat_id']
+            chat_name = row['chat_name']
+            if chat_id not in distinct_chats:
+                distinct_chats[chat_id] = chat_name
+        
+        # Convert the dictionary to a list of dictionaries
+        result = [{"chat_id": k, "chat_name": v} for k, v in distinct_chats.items()]
+        
+        return result
+    except Exception as e:
+        print(f"Error fetching user chats: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching user chats: {str(e)}")
 
 def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
     # Generate embeddings for the query using Voyage AI
@@ -249,16 +283,18 @@ async def handle_query(request: QueryRequest):
     # table_name = create_user_table_if_not_exists(user_email)
     
     if not chat_id:
-        chat_id = create_new_chat(user_email, table_name)
+        chat_id, chat_name = create_new_chat(user_email, query)
+    else:
+        chat_name = None
     
-    save_query_response(user_email, table_name, chat_id, True, query)
+    save_query_response(user_email, table_name, chat_id, True, query,chat_name)
     
     search_results = search_pinecone(user_email, chat_id, query)
     llm_response = generate_llm_response(query, search_results)
     
-    save_query_response(user_email, table_name, chat_id, False, llm_response)
+    save_query_response(user_email, table_name, chat_id, False, llm_response,chat_name)
     
-    return {"response": llm_response, "chat_id": chat_id}
+    return {"response": llm_response, "chat_id": chat_id, "chat_name": chat_name}
 
 @app.get("/api/chat_history")
 async def handle_chat_history(user_email: str, chat_id: str):
@@ -269,6 +305,11 @@ async def handle_chat_history(user_email: str, chat_id: str):
     table_name="chats_data"
     history = get_chat_history(user_email, table_name, chat_id)
     return {"history": history}
+
+@app.get("/api/user_chats")
+async def handle_user_chats(user_email: str):
+    chats = get_user_chats(user_email)
+    return {"chats": chats}
 
 @app.post("/api/new_chat")
 async def handle_new_chat(request: NewChatRequest):
@@ -292,6 +333,9 @@ async def handle_file_upload(
     doc=fitz.open(stream=contents)
     file_content=pymupdf4llm.to_markdown(doc)
 
+    if chat_id=="undefined":
+        chat_id = str(uuid4())
+
     try:
         upload_file_to_pinecone(user_email, chat_id, file.filename, file_content)
         
@@ -301,8 +345,9 @@ async def handle_file_upload(
         
         # Save the upload event and LLM response to the chat history
         table_name = "chats_data"
+        chat_name=str(f"{file.filename} uploaded")
         print(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}")
-        save_query_response(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}")
+        save_query_response(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}",chat_name)
         # save_query_response(user_email, table_name, chat_id, False, llm_response)
 
         return {

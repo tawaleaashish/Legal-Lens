@@ -22,6 +22,8 @@ const LegalLensPage = () => {
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [currentChatId, setCurrentChatId] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
+  const [userChats, setUserChats] = useState([]);
+  const responseRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -29,6 +31,7 @@ const LegalLensPage = () => {
   const logoText = useRef(null);
   const logoTag = useRef(null);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
   const ensureUserTable = async (email) => {
     try {
       // This endpoint will create the table if it doesn't exist
@@ -45,6 +48,7 @@ const LegalLensPage = () => {
       if (user) {
         setUserEmail(user.email);
         await ensureUserTable(user.email);
+        fetchUserChats(user.email);
       } else {
         navigate('/login'); // Redirect to login page if user is not authenticated
       }
@@ -81,6 +85,7 @@ const LegalLensPage = () => {
       if (event === 'SIGNED_IN') {
         setUserEmail(session.user.email);
         await ensureUserTable(session.user.email);
+        fetchUserChats(user.email);
       } else if (event === 'SIGNED_OUT') {
         navigate('/login');
       }
@@ -91,6 +96,20 @@ const LegalLensPage = () => {
       authListener.subscription.unsubscribe();
     };
   }, [navigate]);
+
+  const fetchUserChats = async (email) => {
+    setIsLoadingChats(true);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/user_chats`, {
+        params: { user_email: email }
+      });
+      setUserChats(response.data.chats);
+    } catch (error) {
+      console.error('Error fetching user chats:', error);
+    } finally {
+      setIsLoadingChats(false);
+    }
+  };
 
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
@@ -114,13 +133,16 @@ const LegalLensPage = () => {
       setResponse(res.data.response);
       setCurrentChatId(res.data.chat_id);
 
-      // Update history
-      setHistory(prevHistory => [{ query, response: res.data.response }, ...prevHistory]);
+      if (res.data.chat_name) {
+        setUserChats(prevChats => [...prevChats, { chat_id: res.data.chat_id, chat_name: res.data.chat_name }]);
+      }
+
+      // Fetch updated chat history
+      fetchChatHistory(res.data.chat_id);
     } catch (error) {
       console.error('Error processing request:', error);
       const errorMessage = 'Error processing request: ' + error.message;
       setResponse(errorMessage);
-      setHistory(prevHistory => [{ query, response: errorMessage }, ...prevHistory]);
     } finally {
       setIsLoading(false);
       setQuery('');
@@ -136,27 +158,14 @@ const LegalLensPage = () => {
   };
 
   const handleNewChat = async () => {
-
     if (!userEmail) return;
-    let chat_id
-    try {
-      const res = await axios.post(`${API_BASE_URL}/new_chat`, {
-        user_email: userEmail,
-      });
-      // console.log(res.data.chat_id)
-      chat_id=res.data.chat_id
-      setCurrentChatId(res.data.chat_id);
-      setQuery('');
-      setResponse('');
-      setDisplayedQuery('');
-      setHasQueried(false);
-      setHistory([]);
-      navigate('/home')
-    } catch (error) {
-      console.error('Error creating new chat:', error);
-    }
-    return(chat_id)
-    
+    setCurrentChatId(null);
+    setQuery('');
+    setResponse('');
+    setDisplayedQuery('');
+    setHasQueried(false);
+    setHistory([]);
+    navigate('/home');
   };
 
   const handleFileUpload = async (event) => {
@@ -183,6 +192,7 @@ const LegalLensPage = () => {
       console.log('File uploaded:', response.data.file_name);
       setResponse(response.data.message);
       setHasQueried(true);
+      fetchChatHistory(res.data.chat_id);
     } catch (error) {
       console.error('Error uploading file:', error);
       setResponse(`Error uploading file: ${error.message}`);
@@ -203,6 +213,9 @@ const LegalLensPage = () => {
         },
       });
       setHistory(res.data.history);
+      setHasQueried(true);
+      setCurrentChatId(chatId);
+      scrollToBottom();
     } catch (error) {
       console.error('Error fetching chat history:', error);
     }
@@ -212,6 +225,16 @@ const LegalLensPage = () => {
     await supabase.auth.signOut();
     navigate('/');
   };
+
+  const scrollToBottom = () => {
+    if (responseRef.current) {
+      responseRef.current.scrollTop = responseRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [history]);
 
   if (!userEmail) {
     return <div>Loading...</div>;
@@ -233,8 +256,27 @@ const LegalLensPage = () => {
             </div>
             <div className="chat-sidebar-content">
               <button className="new-chat-button" onClick={handleNewChat}>New Chat</button>
-              {history.map((chat, index) => (
-                <div key={index} className="chat-item" onClick={() => fetchChatHistory(chat.chat_id)}>
+            </div>
+          </div>
+        )}
+
+        {history.length >= 0 && (
+          <button className="toggle-sidebar" onClick={toggleSidebar}>
+            {isSidebarOpen ? 'Hide History' : 'Show History'}
+          </button>
+        )}
+
+         {isSidebarOpen && (
+          <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+            <div className="sidebar-header">
+            </div>
+            <div className="history-list">
+              {userChats.map((chat) => (
+                <div
+                  key={chat.chat_id}
+                  className={`history-item ${chat.chat_id === currentChatId ? 'active' : ''}`}
+                  onClick={() => fetchChatHistory(chat.chat_id)}
+                >
                   {chat.chat_name}
                 </div>
               ))}
@@ -242,38 +284,18 @@ const LegalLensPage = () => {
           </div>
         )}
 
-        {history.length > 0 && (
-          <button className="toggle-sidebar" onClick={toggleSidebar}>
-            {isSidebarOpen ? 'Hide History' : 'Show History'}
-          </button>
-        )}
-
-        {isSidebarOpen && (
-          <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-            <div className="sidebar-header">
-            </div>
-            <div className="history-list">
-              {/* {history.map((item, index) => (
-                <div key={index} className="history-item">
-                  <strong>Query:</strong> {item.query}
-                  <br />
-                  <strong>Response:</strong> {item.response}
-                </div>
-              ))} */}
-            </div>
-          </div>
-        )}
-
         {hasQueried && (
-          <div className="response-section">
+          <div className="response-section" ref={responseRef}>
             {isLoading ? (
               <div className="loading-indicator">Loading...</div>
             ) : (
-              <div>
-                <h3>Query:</h3>
-                <p>{displayedQuery}</p>
-                <h3>Response:</h3>
-                <ReactMarkdown>{response}</ReactMarkdown>
+              <div className="chat-history">
+                {history.map((item, index) => (
+                  <div key={index} className={`chat-item ${item.query_response ? 'query' : 'response'}`}>
+                    <strong>{item.query_response ? 'Query:' : 'Response:'}</strong>
+                    <ReactMarkdown>{item.data.content}</ReactMarkdown>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -306,11 +328,6 @@ const LegalLensPage = () => {
 
         <div className="query-section">
           <Uploadbutton fileHandler={handleFileUpload} />
-          {/* {
-            <div className="uploaded-file">
-              <p>Uploaded: {uploadedFile}</p>
-            </div>
-          } */}
           <input
             type="text"
             placeholder="Ask me your queries..."
