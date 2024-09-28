@@ -16,14 +16,14 @@ pc_index = pinecone.Index("legallens")
 
 ORIGINAL_JSON = []
 
-with open(r"D:\Major Project\Legal-Lens\Text Extraction\MVA.json", "r", encoding="utf-8") as og_file:
+with open(r"D:\Major Project\Legal-Lens\Text Extraction\preamble.json", "r", encoding="utf-8") as og_file:
     ORIGINAL_JSON = json.load(og_file)
 
 def generate_id(metadata):
     id=""
-    if 'chapter' in metadata:
+    if 'article' in metadata:
         if id: id += "-"
-        id += f'chapter-{metadata["chapter"]}'
+        id += f'article-{metadata["article"]}'
     if 'section' in metadata:
         if id: id += "-"
         id += f"section-{metadata['section']}"
@@ -34,14 +34,14 @@ def transform_chunk(json_piece: dict[str, int|str]):
     output_chunk = ""
     metadata = {}
 
-    n_chapter = json_piece.get('chapter')
-    t_chapter = json_piece.get('chapter_title')
+    n_article = json_piece.get('article')
+    t_article = json_piece.get('article_title')
 
-    if n_chapter:
-        metadata['chapter'] = n_chapter
+    if n_article:
+        metadata['article'] = n_article
 
-    if (n_chapter and t_chapter):
-        output_chunk += f"# {n_chapter}:{t_chapter}"
+    if (n_article and t_article):
+        output_chunk += f"# {n_article}:{t_article}"
 
     n_section = json_piece.get("Section") or json_piece.get('section')
     t_section = json_piece.get("section_title") or json_piece.get('title')
@@ -90,7 +90,7 @@ for i, part in enumerate(partitioned):
     
     embeddable_parts.append(new_part)
     print(f"Embedded Chunk {i}")
-    time.sleep(30)
+    # time.sleep(30)
 
 
 # print(embeddable_parts[0][48])
@@ -99,6 +99,6 @@ for i, part in enumerate(partitioned):
 for i, part in enumerate(embeddable_parts):
     pc_index.upsert(
         vectors=part,
-        namespace="mva"
+        namespace="preamble"
     )
     print(f"{10*(i+1)} vectors done.")
