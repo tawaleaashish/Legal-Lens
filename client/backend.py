@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from voyageai import Client as Voyage
 import pymupdf as fitz
 import pymupdf4llm
+import time
 
 # New imports
 from pathlib import Path
@@ -106,7 +107,6 @@ def split_text_into_chunks(text: str) -> list[str]:
         doc_chunks = RECURSIVE_TEXT_SPLITTER.split_text(doc.page_content)
         for chunk in doc_chunks:
             chunks.append(f"{expand_headers(doc.metadata)}\n{chunk}")
-            print(chunk)
 
     return chunks
 
@@ -149,28 +149,27 @@ def upload_file_to_pinecone(user_email: str, chat_id: str, file_name: str, file_
     namespace = f"{user_email}_{chat_id}_{file_name}"
     
     # Convert the file content to markdown
-    print(file_name)
     markdown_content = f"# {file_name}\n\n{file_content}"
     
     # Split the markdown content into chunks
     chunks = split_text_into_chunks(markdown_content)
-    print(chunks)
     
     # Generate embeddings and upsert to Pinecone
     # for chunk in chunks:
     #     # Generate embeddings using Voyage AI
-    #     embeddings = voyage.embed(chunk)
+    #     parts = voyage.embed(chunk,model="voyage-law-2",input_type="document").embeddings
         
-    #     index.upsert(
-    #         vectors=[
-    #             {
-    #                 "id": str(uuid4()),
-    #                 "values": embeddings,
-    #                 "metadata": {"content": chunk}
-    #             }
-    #         ],
-    #         namespace=namespace
-    #     )
+    #     for part in parts:
+    #         index.upsert(
+    #             vectors=[
+    #                 {
+    #                     "id": str(uuid4()),
+    #                     "values": part,
+    #                     "metadata": {"content": chunk}
+    #                 }
+    #             ],
+    #             namespace=namespace
+    #         )
     
     print(f"File uploaded to Pinecone namespace: {namespace}")
 
