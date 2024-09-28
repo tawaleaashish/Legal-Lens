@@ -340,4 +340,7 @@ ul, ol {
 li {
   margin-bottom: -0.7em; /* Adjust space between list items */
 }
+.uploaded-file{
+color: black;
+}
 
