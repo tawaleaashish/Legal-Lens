@@ -155,31 +155,37 @@ const LegalLensPage = () => {
     }
   };
 
-  const handleFileUpload = async (file) => {
-    if (!userEmail) return;
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !userEmail) return;
+
     if (!currentChatId) {
       await handleNewChat();
     }
 
+    setIsLoading(true);
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('user_email', userEmail);
+    formData.append('chat_id', currentChatId);
 
     try {
-      const response=await axios.post(`${API_BASE_URL}/upload_file`, formData, {
-        params: {
-          user_email: userEmail,
-          chat_id: currentChatId,
-        },
+      const response = await axios.post(`${API_BASE_URL}/upload_file`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+
       setUploadedFile(response.data.file_name);
       console.log('File uploaded:', response.data.file_name);
-      alert(`File uploaded successfully: ${response.data.file_name}`);
+      setResponse(response.data.message);
+      setHasQueried(true);
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert(`Error uploading file: ${error.message}`);
+      setResponse(`Error uploading file: ${error.message}`);
+      setHasQueried(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -297,11 +303,11 @@ const LegalLensPage = () => {
 
         <div className="query-section">
           <Uploadbutton onFileUpload={handleFileUpload} />
-          {
+          {/* {
             <div className="uploaded-file">
               <p>Uploaded: {uploadedFile}</p>
             </div>
-          }
+          } */}
           <input
             type="text"
             placeholder="Ask me your queries..."
