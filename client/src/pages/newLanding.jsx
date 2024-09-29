@@ -8,7 +8,7 @@ import logo from '../assets/logo.png';
 import Uploadbutton from '../components/Uploadbutton';
 import supabase from '../supabaseClient';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL =  import.meta.env.DEV ? 'http://localhost:8000/api' : "https://legal-lens-production.up.railway.app/api";
 
 
 const LegalLensPage = () => {
