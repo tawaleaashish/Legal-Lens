@@ -238,7 +238,7 @@ def get_user_chats(user_email: str):
         print(f"Error fetching user chats: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching user chats: {str(e)}")
 
-def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
+def search_pinecone(user_email: str, chat_id: str, query: str, k=3):
     # Generate embeddings for the query using Voyage AI
     query_embedding = voyage.embed(query,model="voyage-law-2",input_type="document").embeddings
 
@@ -247,10 +247,8 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
     user_namespaces = index.describe_index_stats()["namespaces"].keys()
     matching_user_namespaces = [ns for ns in user_namespaces if ns.startswith(user_prefix)]
     static_namespaces = ["cpc", "coi", "crpc", "ida", "iea", "ipc", "mva", "nia", "preamble"]
-    static_namespaces = []
     # Combine user namespaces and static namespaces
     namespaces = matching_user_namespaces + static_namespaces
-    
     combined_results=[]
     for namespace in namespaces:
         results = index.query(
@@ -268,8 +266,7 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
                 'metadata': match.get('metadata',{})
             })
     combined_results = sorted(combined_results, key=lambda x: x['score'], reverse=True)
-    combined_results=combined_results[:8]
-    print(combined_results)
+    combined_results=combined_results[:5]
     return [result['metadata'] for result in combined_results if 'metadata' in result]
 
 def generate_llm_response(query: str, context: list):
