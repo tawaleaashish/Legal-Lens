@@ -159,14 +159,27 @@ const LegalLensPage = () => {
   };
 
   const handleNewChat = async () => {
+
     if (!userEmail) return;
-    setCurrentChatId(null);
-    setQuery('');
-    setResponse('');
-    setDisplayedQuery('');
-    setHasQueried(false);
-    setHistory([]);
-    navigate('/home');
+    let chat_id
+    try {
+      const res = await axios.post(`${API_BASE_URL}/new_chat`, {
+        user_email: userEmail,
+      });
+      // console.log(res.data.chat_id)
+      chat_id=res.data.chat_id
+      setCurrentChatId(res.data.chat_id);
+      setQuery('');
+      setResponse('');
+      setDisplayedQuery('');
+      setHasQueried(false);
+      setHistory([]);
+      navigate('/home')
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+    }
+    return(chat_id)
+    
   };
 
   const handleFileUpload = async (event) => {
