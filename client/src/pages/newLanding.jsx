@@ -47,7 +47,7 @@ const LegalLensPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
-        await ensureUserTable(user.email);
+        // await ensureUserTable(user.email);
         fetchUserChats(user.email);
         navigate('/home'); // Navigate to /home on reload
       } else {
@@ -55,7 +55,7 @@ const LegalLensPage = () => {
       }
     };
 
-    // checkUser();
+    checkUser();
 
     gsap.to(logoItem.current, {
       opacity: 1,
@@ -85,7 +85,7 @@ const LegalLensPage = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         setUserEmail(session.user.email);
-        await ensureUserTable(session.user.email);
+        // await ensureUserTable(session.user.email);
         fetchUserChats(session.user.email);
       } else if (event === 'SIGNED_OUT') {
         navigate('/login');
