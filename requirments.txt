@@ -1,0 +1,12 @@
+fastapi
+python-dotenv
+pinecone
+supabase
+voyageai
+google-generativeai
+pymupdf4llm
+pymupdf
+transformers
+langchain-core
+langchain-text-splitters
+pydantic
