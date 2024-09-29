@@ -44,7 +44,7 @@ pinecone = Pinecone(api_key="0778b6c9-795c-4954-bf9d-3f1c9bfd09d6")
 index = pinecone.Index("legallens")
 
 # Configure the Gemini API
-genai.configure(api_key='AIzaSyAy8IgFIbB2AKwyUZEPrJIFjIhOXp2PQ9E')
+genai.configure(api_key='AIzaSyBAjZD9bxm4y15AYi5qLQmHAwVaIusJMCM')
 
 # Configure Voyage AI
 voyage = Voyage(api_key="pa-BGEn0qb_-0HgMlpzE_TR9H1xKqr-qI7xmeRvYkb0aww")
