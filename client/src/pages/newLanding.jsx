@@ -178,7 +178,7 @@ const LegalLensPage = () => {
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
-    return(chat_id)
+    return(chat_id[0])
     
   };
 
