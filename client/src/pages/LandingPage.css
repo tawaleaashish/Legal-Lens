@@ -358,6 +358,7 @@ color: black;
 
 .history-item.active {
   background-color: #f0f0f0;
+  color: black;
 }
 
 .chat-history {

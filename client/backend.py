@@ -242,7 +242,15 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
     # Generate embeddings for the query using Voyage AI
     query_embedding = voyage.embed(query,model="voyage-law-2",input_type="document").embeddings
 
-    namespaces=[f"{user_email}_{chat_id}_*","cpc","coi","crpc","ida","iea","ipc","mva","nia","preamble"]
+    user_prefix = f"{user_email}_{chat_id}_"
+    # Get all namespaces that start with the user prefix
+    user_namespaces = index.describe_index_stats()["namespaces"].keys()
+    matching_user_namespaces = [ns for ns in user_namespaces if ns.startswith(user_prefix)]
+    static_namespaces = ["cpc", "coi", "crpc", "ida", "iea", "ipc", "mva", "nia", "preamble"]
+    static_namespaces = []
+    # Combine user namespaces and static namespaces
+    namespaces = matching_user_namespaces + static_namespaces
+    
     combined_results=[]
     for namespace in namespaces:
         results = index.query(
@@ -261,6 +269,7 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
             })
     combined_results = sorted(combined_results, key=lambda x: x['score'], reverse=True)
     combined_results=combined_results[:8]
+    print(combined_results)
     return [result['metadata'] for result in combined_results if 'metadata' in result]
 
 def generate_llm_response(query: str, context: list):
@@ -346,8 +355,8 @@ async def handle_file_upload(
         # Save the upload event and LLM response to the chat history
         table_name = "chats_data"
         chat_name=str(f"{file.filename} uploaded")
-        print(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}")
-        save_query_response(user_email, table_name, chat_id, False, f"Uploaded file: {file.filename}",chat_name)
+        print(user_email, table_name, chat_id, True, f"Uploaded file: {file.filename}")
+        save_query_response(user_email, table_name, chat_id, True, f"Uploaded file: {file.filename}",chat_name)
         # save_query_response(user_email, table_name, chat_id, False, llm_response)
 
         return {
