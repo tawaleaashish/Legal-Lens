@@ -238,7 +238,7 @@ def get_user_chats(user_email: str):
         print(f"Error fetching user chats: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching user chats: {str(e)}")
 
-def search_pinecone(user_email: str, chat_id: str, query: str, k=3):
+def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
     # Generate embeddings for the query using Voyage AI
     query_embedding = voyage.embed(query,model="voyage-law-2",input_type="document").embeddings
 
@@ -266,7 +266,7 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=3):
                 'metadata': match.get('metadata',{})
             })
     combined_results = sorted(combined_results, key=lambda x: x['score'], reverse=True)
-    combined_results=combined_results[:5]
+    combined_results=combined_results[:8]
     return [result['metadata'] for result in combined_results if 'metadata' in result]
 
 def generate_llm_response(query: str, context: list):
