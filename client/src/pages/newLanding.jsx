@@ -55,7 +55,7 @@ const LegalLensPage = () => {
       }
     };
 
-    checkUser();
+    // checkUser();
 
     gsap.to(logoItem.current, {
       opacity: 1,
@@ -86,7 +86,7 @@ const LegalLensPage = () => {
       if (event === 'SIGNED_IN') {
         setUserEmail(session.user.email);
         await ensureUserTable(session.user.email);
-        fetchUserChats(user.email);
+        fetchUserChats(session.user.email);
       } else if (event === 'SIGNED_OUT') {
         navigate('/login');
       }
@@ -168,7 +168,7 @@ const LegalLensPage = () => {
       });
       // console.log(res.data.chat_id)
       chat_id=res.data.chat_id
-      setCurrentChatId(res.data.chat_id);
+      setCurrentChatId(res.data.chat_id[0]);
       setQuery('');
       setResponse('');
       setDisplayedQuery('');
@@ -178,7 +178,8 @@ const LegalLensPage = () => {
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
-    return(chat_id)
+    // console.log(chat_id)
+    return(chat_id[0])
     
   };
 
@@ -205,7 +206,10 @@ const LegalLensPage = () => {
       setUploadedFile(response.data.file_name);
       console.log('File uploaded:', response.data.file_name);
       setResponse(response.data.message);
-      navigate('/home');
+
+      fetchChatHistory(currentChatId??new_chat_id);
+
+      // navigate('/home');
     } catch (error) {
       console.error('Error uploading file:', error);
       setResponse(`Error uploading file: ${error.message}`);
