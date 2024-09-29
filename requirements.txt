@@ -10,3 +10,6 @@ transformers
 langchain-core
 langchain-text-splitters
 pydantic
+uvicorn
+gunicorn
+uvicorn-worker
