@@ -201,9 +201,6 @@ const LegalLensPage = () => {
       const response = await axios.post(`${API_BASE_URL}/upload_file`, formData, {
         
       });
-      fetchChatHistory(new_chat_id);
-      setHasQueried(true);
-      isSidebarOpen(true);
       
       setUploadedFile(response.data.file_name);
       console.log('File uploaded:', response.data.file_name);
