@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainPageContent />} />
         <Route path="/home" element={<LegalLensPage />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        
       </Routes>
     </Router>
   )
