@@ -13,3 +13,4 @@ pydantic
 uvicorn
 gunicorn
 uvicorn-worker
+python-multipart
