@@ -49,8 +49,9 @@ const LegalLensPage = () => {
         setUserEmail(user.email);
         await ensureUserTable(user.email);
         fetchUserChats(user.email);
+        navigate('/home'); // Navigate to /home on reload
       } else {
-        navigate('/login'); // Redirect to login page if user is not authenticated
+        navigate('/login');
       }
     };
 
@@ -194,6 +195,7 @@ const LegalLensPage = () => {
       setUploadedFile(response.data.file_name);
       console.log('File uploaded:', response.data.file_name);
       setResponse(response.data.message);
+      navigate('/home');
     } catch (error) {
       console.error('Error uploading file:', error);
       setResponse(`Error uploading file: ${error.message}`);
