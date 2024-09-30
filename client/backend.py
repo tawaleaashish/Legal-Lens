@@ -177,7 +177,7 @@ def generate_chat_name(query: str) -> str:
     # Use Gemini to generate a chat name based on the first query
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"rewrite this query: {query} in 5 words without changing words."
+        prompt = f"Give a single title name for provided Query: {query}. It should be very short and consise in 3-4 words."
         response = model.generate_content(prompt)
         return response.text.strip()[:50]  # Limit to 50 characters
     except Exception as e:
@@ -271,7 +271,8 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
 
 def generate_llm_response(query: str, context: list):
     try:
-        prompt = f"Query: {query}\nContext: {context}\nPlease provide a response based on the given context."
+        # prompt = f"Query: {query}\nContext: {context}\nPlease provide a response based on the given context."
+        prompt = f"Imagine yourself as a lawyer/judge and an expert legal document analyst in India.You work with Constitution of India and all related documents. Provide a response based on the provided Query:{query}\nContext:{context}.Your response should be specific and related to the query asked and context provided.You can also use external reference as well to fill missing information."
         model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(prompt)
         return response.text

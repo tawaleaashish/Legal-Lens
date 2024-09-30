@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState ,useCallback} from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -24,6 +24,9 @@ const LegalLensPage = () => {
   const [userEmail, setUserEmail] = useState(null);
   const [userChats, setUserChats] = useState([]);
   const responseRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const sidebarToggleRef = useRef(null);
+  const mainContentRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -41,6 +44,24 @@ const LegalLensPage = () => {
       console.error('Error ensuring user table exists:', error);
     }
   };
+
+  const handleClickOutside = useCallback((event) => {
+    if (
+      sidebarRef.current &&
+      !sidebarRef.current.contains(event.target) &&
+      !sidebarToggleRef.current.contains(event.target) &&
+      !mainContentRef.current.contains(event.target)
+    ) {
+      setIsSidebarOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [handleClickOutside]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -259,48 +280,37 @@ const LegalLensPage = () => {
 
   return (
     <div className="legal-lens-page">
-      <main className="main-content">
-        <button className="chat-toggle-button" onClick={toggleChatSidebar}>
-          ☰
-        </button>
+      <button 
+        className="sidebar-toggle-button" 
+        onClick={toggleSidebar}
+        ref={sidebarToggleRef}
+      >
+        ☰
+      </button>
 
-        <button onClick={handleLogout} className="logout-button">Logout</button>
+      <button onClick={handleLogout} className="logout-button">Logout</button>
 
-        {isChatSidebarOpen && (
-          <div className="chat-sidebar">
-            <div className="chat-sidebar-header">
-              <button className="close-sidebar" onClick={toggleChatSidebar}>×</button>
+      <div 
+        className={`sidebar ${isSidebarOpen ? 'open' : ''}`}
+        ref={sidebarRef}
+      >
+        <div className="sidebar-header">
+          <button className="new-chat-button" onClick={handleNewChat}>New Chat</button>
+        </div>
+        <div className="history-list">
+          {userChats.map((chat) => (
+            <div
+              key={chat.chat_id}
+              className={`history-item ${chat.chat_id === currentChatId ? 'active' : ''}`}
+              onClick={() => fetchChatHistory(chat.chat_id)}
+            >
+              {chat.chat_name}
             </div>
-            <div className="chat-sidebar-content">
-              <button className="new-chat-button" onClick={handleNewChat}>New Chat</button>
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
+      </div>
 
-        {history.length >= 0 && (
-          <button className="toggle-sidebar" onClick={toggleSidebar}>
-            {isSidebarOpen ? 'Hide History' : 'Show History'}
-          </button>
-        )}
-
-         {isSidebarOpen && (
-          <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-            <div className="sidebar-header">
-            </div>
-            <div className="history-list">
-              {userChats.map((chat) => (
-                <div
-                  key={chat.chat_id}
-                  className={`history-item ${chat.chat_id === currentChatId ? 'active' : ''}`}
-                  onClick={() => fetchChatHistory(chat.chat_id)}
-                >
-                  {chat.chat_name}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+      <main className="main-content" ref={mainContentRef}>
         {hasQueried && (
           <div className="response-section" ref={responseRef}>
             {isLoading ? (
@@ -309,7 +319,6 @@ const LegalLensPage = () => {
               <div className="chat-history">
                 {history.map((item, index) => (
                   <div key={index} className={`chat-item ${item.query_response ? 'query' : 'response'}`}>
-                    <strong>{item.query_response ? 'Query:' : 'Response:'}</strong>
                     <ReactMarkdown>{item.data.content}</ReactMarkdown>
                   </div>
                 ))}
@@ -320,26 +329,25 @@ const LegalLensPage = () => {
 
         {!hasQueried && (
           <>
-          <div className="icon-section">
-            <img
-              ref={logoItem}
-              src={logo}
-              alt="Legal Lens Icon"
-              className="legal-lens-icon"
-            />
-          </div>
-          <h1 ref={logoText} className="heading">
-            Legal Lens
-          </h1>
-          <p ref={logoTag} className="tagline">
-            Decoding Legal Jargon
-          </p>
+            <div className="icon-section">
+              <img
+                ref={logoItem}
+                src={logo}
+                alt="Legal Lens Icon"
+                className="legal-lens-icon"
+              />
+            </div>
+            <h1 ref={logoText} className="heading">
+              Legal Lens
+            </h1>
+            <p ref={logoTag} className="tagline">
+              Decoding Legal Jargon
+            </p>
             <div className="action-buttons">
               <button className="action-button" onClick={() => setQuery("Summarize my contract")}>Summarize my contract</button>
               <button className="action-button" onClick={() => setQuery("Identify key clauses")}>Key clause identification</button>
               <button className="action-button" onClick={() => setQuery("Analyze legal documents")}>Analyze legal documents</button>
             </div>
-            
           </>
         )}
 
