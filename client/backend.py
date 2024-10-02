@@ -272,7 +272,7 @@ def search_pinecone(user_email: str, chat_id: str, query: str, k=5):
 def generate_llm_response(query: str, context: list):
     try:
         # prompt = f"Query: {query}\nContext: {context}\nPlease provide a response based on the given context."
-        prompt = f"Imagine yourself as a lawyer/judge and an expert legal document analyst in India.You work with Constitution of India and all related documents. Provide a response based on the provided Query:{query}\nContext:{context}.Your response should be specific and related to the query asked and context provided.You can also use external reference as well to fill missing information from Indian law if provided information is not suitable"
+        prompt = f"Imagine yourself as a lawyer/judge and an expert legal document analyst in India.You work with Constitution of India and all related documents. Provide a response based on the provided Query:{query}\nContext:{context}.Your response should be specific and related to the query asked and context provided.You can also use external reference as well to fill missing information from Indian law if provided information is not suitable.Format all responce in markdown form with bold headings."
         model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(prompt)
         return response.text
