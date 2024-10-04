@@ -177,7 +177,7 @@ def generate_chat_name(query: str) -> str:
     # Use Gemini to generate a chat name based on the first query
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"Give a single title name for provided Query: {query}. It should be very short and consise in 3-4 words."
+        prompt = f"Give a title name for provided Query: {query}."
         response = model.generate_content(prompt)
         return response.text.strip()[:50]  # Limit to 50 characters
     except Exception as e:
