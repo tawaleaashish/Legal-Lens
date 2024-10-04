@@ -44,7 +44,7 @@ pinecone = Pinecone(api_key="0778b6c9-795c-4954-bf9d-3f1c9bfd09d6")
 index = pinecone.Index("legallens")
 
 # Configure the Gemini API
-genai.configure(api_key='AIzaSyBlZ1ZrrO-wrZd4TFVrSzy_qwsHdGK7gdE')
+genai.configure(api_key='AIzaSyCUFhAzkKjvYOoyDhuCwk1UkVrFC7UHmPI')
 
 # Configure Voyage AI
 voyage = Voyage(api_key="pa-BGEn0qb_-0HgMlpzE_TR9H1xKqr-qI7xmeRvYkb0aww")
@@ -176,8 +176,8 @@ def upload_file_to_pinecone(user_email: str, chat_id: str, file_name: str, file_
 def generate_chat_name(query: str) -> str:
     # Use Gemini to generate a chat name based on the first query
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"Give a single title name for provided Query: {query}. It should be very short and consise in 3-4 words."
+        model = genai.GenerativeModel('gemini-1.5-pro')
+        prompt = f"Give a title name for provided Query: {query}. It should be very short and consise in 3-4 words."
         response = model.generate_content(prompt)
         return response.text.strip()[:50]  # Limit to 50 characters
     except Exception as e:
